@@ -1,679 +1,745 @@
 # CSigma — Parallel Task Module Documentation
-
 **Version 1.0 — Copyright Phil467, 2025**
 
-This document provides an API-style reference for the `csParallelTask` component of the CSigma project. It reproduces function prototypes and their comments exactly as they appear in the header files, organised for easy reading on GitHub.
+This document provides a clean API-style reference for the `csParallelTask` component of the CSigma project.
+It preserves original descriptions and parameter details but presents them in a modern, readable Markdown layout for GitHub.
 
 ---
 
 ## Table of Contents
 - [csPARALLEL.h](#csparallelh)
-  - [Namespace `csParallelTask` overview](#namespace-csparalleltask-overview)
-  - [Templates & Utility](#templates--utility)
+  - [Templates & Utilities](#templates--utilities)
   - [Functions](#functions)
 - [csPARGS.h](#cspargsh)
-  - [Class `csPARGS`](#class-cspargs)
-  - [Methods & Operators](#methods--operators)
+  - [Class `csPARGS` — Methods & Operators](#class-cspargs---methods--operators)
 - [csPERF_MEASUREMENT.h](#csperf_measurementh)
-  - [Class `csPERF_MEASUREMENT`](#class-csperf_measurement)
-  - [Methods](#methods-1)
+  - [Class `csPERF_MEASUREMENT` — Methods](#class-csperf_measurement---methods)
+- [Examples](#examples)
 
 ---
 
 ## csPARALLEL.h
 
+**Namespace:** `csParallelTask` — Utilities to register functions, prepare argument buffers and execute tasks in parallel.
+
+### Templates & Utilities
+
+#### `template<typename... _Args> void registerArgs(void**& Args, size_t& nbArgs, void* arg, _Args... args)`
 ```cpp
-#pragma once
-
-#if defined _WIN32 || defined __CYGWIN__
-  #ifdef BUILDING_CSPARALLEL_DLL
-    #define CSPARALLEL_API __declspec(dllexport)
-  #else
-    #define CSPARALLEL_API __declspec(dllimport)
-  #endif
-#else
-  #ifdef BUILDING_CSPARALLEL_DLL
-    #define CSPARALLEL_API __attribute__ ((visibility ("default")))
-  #else
-    #define CSPARALLEL_API
-  #endif
-#endif
-
-#ifndef CSPARALLEL_H_INCLUDED
-#define CSPARALLEL_H_INCLUDED
-
-#include <cstddef>
-#include <iostream>
-#include <thread>
-#include <vector>
-#include <string>
-#include <string.h>
-#include <memoryapi.h>
-#include "csPARGS.h"
-#include "csPERF_MEASUREMENT.h"
-
-using namespace std;
-
-typedef csPARGS::BOUNDS* BUFFER_SHAPE;
+template<typename... _Args> void registerArgs(void**& Args, size_t& nbArgs, void* arg, _Args... args);
 ```
-### Namespace `csParallelTask` overview
+**Description**  
+Register arguments for some function (at least one argument).
 
-The header declares the `csParallelTask` namespace containing utilities to register functions, set up arguments and buffer shapes and execute tasks in parallel.
+**Parameters**
+- **Args** — Returned table that will contain registered arguments (pointer to void* array).  
+- **nbArgs** — Number of arguments (will be incremented).  
+- **arg** — First argument.  
+- **args** — Remaining arguments (variadic).
 
 ---
-### Templates & Utility
 
-#### `registerArgs` (variadic template)
+#### `inline void registerArgs(void**& Args, size_t& nbArgs)`
 ```cpp
-/**
- * @brief TODO: register arguments for some function (a least one argument).
- * @param Args TODO: Returned tqable that will contain registered arguments.
- * @param nbArgs TODO: Number of arguments.
- * @param arg TODO: Firts argument.
- * @param args TODO: Other arguments.
- */
-template<typename... _Args> void registerArgs(void**& Args, size_t& nbArgs, void* arg, _Args... args)
+inline void registerArgs(void**& Args, size_t& nbArgs);
 ```
-```cpp
-inline void registerArgs(void**& Args, size_t& nbArgs)
-```
+**Description**  
+Termination overload for the variadic `registerArgs` template (no-op).
+
 ---
 
 ### Functions
 
-> The following functions are declared in `csPARALLEL.h`. Each entry shows the prototype followed by the original comment block preserved exactly.
-
 #### `void setArgs(size_t idf, BUFFER_SHAPE shape, csPARGS funcArgs)`
 ```cpp
-/**
- * @brief TODO: Sets up arguments of each work block for the function indexed by 'idf'.
- * @param idf TODO: Index of the function.
- * @param shape TODO: Table containing the bounds of each created block.
- * @param funcArgs TODO: Object of csPARGS class containing arguments of the function.
- */
 void setArgs(size_t idf, BUFFER_SHAPE shape, csPARGS funcArgs);
 ```
+**Description**  
+Sets up arguments of each work block for the function indexed by `idf`.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **shape** — Table containing the bounds of each created block.  
+- **funcArgs** — Object of `csPARGS` class containing arguments of the function.
+
+---
+
 #### `void setArgsRegular(size_t idf, size_t workSize, csPARGS funcArgs)`
 ```cpp
-/**
- * @brief TODO: Sets up arguments of each regular (same size) work block for the function indexed by 'idf'.
- * @param idf TODO: Index of the function.
- * @param workSize TODO: The size of the work, used to build regular blocks.
- * @param funcArgs TODO: Object of csPARGS class containing arguments of the function.
- */
 void setArgsRegular(size_t idf, size_t workSize, csPARGS funcArgs);
 ```
+**Description**  
+Sets up arguments of each regular (same size) work block for the function indexed by `idf`.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **workSize** — The size of the work, used to build regular blocks.  
+- **funcArgs** — Object of `csPARGS` class containing arguments of the function.
+
+---
+
 #### `void setBufferShape(size_t idf, BUFFER_SHAPE shape)`
 ```cpp
-/**
- * @brief TODO: reshape the work by assigning new one.
- * @param idf TODO: Index of the function.
- * @param shape TODO: Table containing the bounds of each created block.
- */
 void setBufferShape(size_t idf, BUFFER_SHAPE shape);
 ```
+**Description**  
+Reshape the work by assigning a new buffer shape.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **shape** — Table containing the bounds of each created block.
+
+---
+
 #### `void setBufferShapeRegular(size_t idf, size_t workSize)`
 ```cpp
-/**
- * @brief TODO: reshape the work with regular (same size) blocks, following the new 'workSize' parameter.
- * @param idf TODO: Index of the function.
- * @param workSize TODO: Size of the work.
- */
 void setBufferShapeRegular(size_t idf, size_t workSize);
 ```
+**Description**  
+Reshape the work with regular (same size) blocks following the new `workSize` parameter.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **workSize** — Size of the work.
+
+---
+
 #### `void setDelay(size_t idf, size_t delay)`
 ```cpp
-/**
- * @brief TODO: Sets up time delay (in nanoseconds) for loops to make safe execution.
- * @param idf TODO: Index of the function.
- * @param delay TODO: Delay to assign to every thread.
- */
 void setDelay(size_t idf, size_t delay);
 ```
+**Description**  
+Sets up time delay (in nanoseconds) for loops to make safe execution.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **delay** — Delay to assign to every thread.
+
+---
+
 #### `void setDelay(size_t idf, vector<size_t> delayList)`
 ```cpp
-/**
- * @brief TODO: Sets up time delay (in nanoseconds) for loops to make safe execution.
- * @param idf TODO: Index of the function.
- * @param delayList TODO: Lists of delay values for each thread.
- */
 void setDelay(size_t idf, vector<size_t> delayList);
 ```
+**Description**  
+Sets up time delay per-thread using a list of delay values.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **delayList** — List of delay values for each thread.
+
+---
+
 #### `void setExecutionMode(size_t idf, bool execMode)`
 ```cpp
-/**
- * @brief TODO: Defines weather the function will be executed normally or in background.
- * @param idf TODO: Index of the function.
- * @param execMode TODO: Execution mode. Can be : CSTHREAD_NORMAL_EXECUTION or CSTHREAD_BACKGROUND_EXECUTION.
- */
 void setExecutionMode(size_t idf, bool execMode);
 ```
+**Description**  
+Defines whether the function will be executed normally or in background.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **execMode** — Execution mode. Can be: `CSTHREAD_NORMAL_EXECUTION` or `CSTHREAD_BACKGROUND_EXECUTION`.
+
+---
+
 #### `void setExecutionMode(size_t idf, vector<bool> execMode)`
 ```cpp
-/**
- * @brief TODO: Defines weather each thread will be executed normally or in background.
- * @param idf TODO: Index of the function.
- * @param execMode TODO: List of execution mode for each thread. Each one can be : CSTHREAD_NORMAL_EXECUTION or CSTHREAD_BACKGROUND_EXECUTION.
- */
 void setExecutionMode(size_t idf, vector<bool> execMode);
 ```
+**Description**  
+Defines whether each thread will be executed normally or in background.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **execMode** — List of execution modes for each thread (`CSTHREAD_NORMAL_EXECUTION` or `CSTHREAD_BACKGROUND_EXECUTION`).
+
+---
+
 #### `BUFFER_SHAPE makeRegularBufferShape(size_t workSize, size_t& nBlocks)`
 ```cpp
-/**
- * @brief TODO: Make 'nBlocks' Threads of same size that work each one on a part of the work.
- * @param workSize TODO: The size of the work.
- * @param nBlocks TODO: Number of work blocks. Each block is managed by one thread. 'nBlocks' is modified to be equal to the number of computing units of the CPU, if it value is greater.
- * @return BUFFER_SHAPE  TODO: Table containing all the created blocks.
- */
-BUFFER_SHAPE  makeRegularBufferShape(size_t workSize, size_t& nBlocks);
+BUFFER_SHAPE makeRegularBufferShape(size_t workSize, size_t& nBlocks);
 ```
+**Description**  
+Make `nBlocks` threads of same size that work each on a part of the work. `nBlocks` is adjusted to CPU physical units if necessary.
+
+**Parameters**
+- **workSize** — The size of the work.  
+- **nBlocks** — Number of work blocks (may be modified).
+
+**Returns**  
+Table containing all the created blocks (buffer shape).
+
+---
+
 #### `size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char* fName, void(*blockFunc)(csPARGS), csPARGS funcArgs)`
 ```cpp
-/**
- * @brief TODO: Register a new function.
- * @param nBlocks TODO: Number of work blocks, corresponding each one to a thread.
- * @return workSize TODO: Buffer Size.
- * @param shape TODO: Table containing the bounds of each block to be created.
- * @param charfName TODO: Name of the function to register.
- * @param blockFunc TODO: Pointer to the function to register.
- * @return size_t TODO: Index of the registered function.
- */
 size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char* fName, void(*blockFunc)(csPARGS), csPARGS funcArgs);
 ```
+**Description**  
+Register a new function.
+
+**Parameters**
+- **nBlocks** — Number of work blocks, each corresponding to one thread.  
+- **workSize** — Buffer size.  
+- **shape** — Table containing the bounds of each block to be created.  
+- **fName** — Name of the function to register.  
+- **blockFunc** — Pointer to the function to register.  
+- **funcArgs** — `csPARGS` object containing arguments of the function.
+
+**Returns**  
+Index of the registered function.
+
+---
+
 #### `size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*blockFunc)(csPARGS), size_t nbArgs,...)`
 ```cpp
-/**
- * @brief TODO: Extended registation of a new function. Allows to specify directly pointers to each argument of the function, rather than giving a 'csPARGS' class that contains arguments, as done by 'registerFunction'.
- * @param nBlocks TODO: Number of work blocks, corresponding each one to a thread.
- * @return workSize TODO: Buffer Size.
- * @param shape TODO: Table containing the bounds of each block to be created.
- * @param charfName TODO: Name of the function to register.
- * @param blockFunc TODO: Pointer to the function to register.
- * @return size_t TODO: Index of the registered function.
- */
 size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*blockFunc)(csPARGS), size_t nbArgs,...);
 ```
+**Description**  
+Extended registration allowing to specify directly pointers to each argument (variadic) instead of a `csPARGS` object.
+
+**Parameters**
+- **nBlocks** — Number of work blocks.  
+- **workSize** — Buffer size.  
+- **shape** — Table containing the bounds of each block.  
+- **fName** — Name of the function to register.  
+- **blockFunc** — Pointer to the function to register.  
+- **nbArgs** — Number of variadic arguments followed by their pointers.
+
+**Returns**  
+Index of the registered function.
+
+---
+
 #### `size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*blockFunc)(csPARGS), size_t nbArgs,...)`
 ```cpp
-/**
- * @brief TODO: Extended registation of a new function. Allows to specify directly pointers to each argument of the function, rather than giving a 'csPARGS' class that contains arguments, as done by 'registerFunction'.
- * @param nBlocks TODO: Number of work blocks, corresponding each one to a thread.
- * @param workSize TODO: The size of the work, used to build regular blocks.
- * @param charfName TODO: Name of the function to register.
- * @param blockFunc TODO: Pointer to the function to register.
- * @return size_t TODO: Index of the registered function.
- */
 size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*blockFunc)(csPARGS), size_t nbArgs,...);
 ```
-#### Template overload for `registerFunctionRegularEx` (variadic)
+**Description**  
+Extended registration for regular blocks (work divided evenly), allowing variadic argument pointers.
+
+**Parameters**
+- **nBlocks** — Number of work blocks.  
+- **workSize** — The size of the work used to build regular blocks.  
+- **fName** — Name of the function to register.  
+- **blockFunc** — Pointer to the function.  
+- **nbArgs** — Number of arguments followed by their pointers.
+
+**Returns**  
+Index of the registered function.
+
+---
+
+#### `template<typename... _Args> size_t registerFunctionRegularEx(...)` (variadic convenience overload)
 ```cpp
-/**
- * @brief TODO: Extended registation of a new function. Allows to specify directly pointers to each argument of the function, rather than giving a 'csPARGS' class that contains arguments, as done by 'registerFunction'.
- * @param nBlocks TODO: Number of work blocks, corresponding each one to a thread.
- * @param workSize TODO: The size of the work, used to build regular blocks.
- * @param charfName TODO: Name of the function to register.
- * @param blockFunc TODO: Pointer to the function to register.
- * @param arg TODO: Void Pointer to the first argument.
- * @param args TODO: Other arguments in variable number.
- */
-template<typename... _Args> size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*Function)(csPARGS), void*arg, _Args... args)
+template<typename... _Args> size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*Function)(csPARGS), void*arg, _Args... args);
 ```
+**Description**  
+Template helper that builds the `Args` array from variadic pointers, constructs a regular buffer shape, creates a `csPARGS` and calls `registerFunction` internally.
+
+**Parameters**
+- **nBlocks** — Number of work blocks.  
+- **workSize** — Work size.  
+- **fName** — Function name.  
+- **Function** — Pointer to the function.  
+- **arg, args...** — Variadic list of argument pointers.
+
+**Returns**  
+Index of the registered function.
+
+---
+
 #### `size_t getRightThreadNumber(size_t nThread)`
 ```cpp
-/**
- * @brief TODO: Returns min(nThread, getMaxThreadNumber()), where 'getMaxThreadNumber()' function gives the number of physical units of the CPU.
- * @param nThread TODO: Number of thread needed.
- * @return size_t TODO: min(nThread, getMaxThreadNumber()).
- */
 size_t getRightThreadNumber(size_t nThread);
 ```
+**Description**  
+Returns `min(nThread, getMaxThreadNumber())`.
+
+**Parameters**
+- **nThread** — Number of threads requested.
+
+**Returns**  
+Adjusted number of threads to use.
+
+---
+
 #### `size_t getMaxThreadNumber()`
 ```cpp
-/**
- * @brief TODO: Gives the number of physical units of the CPU. Each one excecutes one thread.
- * @return size_t TODO: Number of physical units of the CPU.
- */
 size_t getMaxThreadNumber();
 ```
+**Description**  
+Gives the number of physical units of the CPU (available threads).
+
+**Returns**  
+Number of physical CPU units.
+
+---
+
 #### `vector<csPARGS> getArgs(size_t idf)`
 ```cpp
-/**
- * @brief TODO: Returns table that contains the 'csPARGS' arguments objects of all the blocks.
- * @param idf TODO: Index of the function.
- * @return vector<csPARGS> TODO: Table of the arguments objects of all blocks.
- */
 vector<csPARGS> getArgs(size_t idf);
 ```
+**Description**  
+Returns a table that contains the `csPARGS` arguments objects of all blocks for a function.
+
+**Parameters**
+- **idf** — Index of the function.
+
+**Returns**  
+Vector of `csPARGS` objects, one per block.
+
+---
+
 #### `csPARGS getArgs(size_t idf, size_t ida)`
 ```cpp
-/**
- * @brief TODO: Returns the arguments object of the 'ida' block for the 'idf' function.
- * @param idf TODO: Index of the function.
- * @param ida TODO: Index of block.
- * @return csPARGS TODO: Arguments object of 'ida' block.
- */
 csPARGS getArgs(size_t idf, size_t ida);
 ```
+**Description**  
+Returns the arguments object of the `ida` block for the `idf` function.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **ida** — Index of the block.
+
+**Returns**  
+`csPARGS` for the specified block.
+
+---
+
 #### `size_t getId(const char* funcName)`
 ```cpp
-/**
- * @brief TODO: Returns the index of the function identified by it name 'funcName'.
- * @return size_t TODO: Index of the specified function.
- */
 size_t getId(const char*funcName);
 ```
+**Description**  
+Returns the index of the function identified by its name.
+
+**Parameters**
+- **funcName** — Name of the function.
+
+**Returns**  
+Index of the specified function.
+
+---
+
 #### `size_t getId(void(*f)(csPARGS))`
 ```cpp
-/**
- * @brief TODO: Returns the index of the function identified by it name address 'f'.
- * @param f TODO: Address of the function.
- * @return size_t TODO: Index of the specified function.
- */
 size_t getId(void(*f)(csPARGS));
 ```
+**Description**  
+Returns the index of the function identified by its function pointer.
+
+**Parameters**
+- **f** — Function pointer.
+
+**Returns**  
+Index of the specified function.
+
+---
+
 #### `size_t getWorkSize(int idf)`
 ```cpp
-/**
- * @brief TODO: Returns the global work size for the function indexed by 'idf'.
- * @param idf TODO: Index of the function.
- * @return size_t TODO: Global work size.
- */
 size_t getWorkSize(int idf);
 ```
+**Description**  
+Returns the global work size for the function indexed by `idf`.
+
+**Parameters**
+- **idf** — Index of the function.
+
+**Returns**  
+Global work size.
+
+---
+
 #### `void updateArg(size_t idf, size_t ida, void* &&arg)`
 ```cpp
-/**
- * @brief TODO: Update the 'ida' argument of 'idf' function, with 'arg'.
- * @param idf TODO: Index of the function.
- * @param ida TODO: Index of the argument.
- * @param arg TODO: Argument to assign.
- */
 void updateArg(size_t idf, size_t ida, void* &&arg);
 ```
+**Description**  
+Update the `ida` argument of `idf` function with `arg`.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **ida** — Index of the argument.  
+- **arg** — Argument to assign.
+
+---
+
 #### `void updateArg(size_t idf, initializer_list<size_t> ida, initializer_list<void*> arg)`
 ```cpp
-/**
- * @brief TODO: Update the 'ida' list of arguments of 'idf' function, with 'arg' list.
- * @param idf TODO: Index of the function.
- * @param ida TODO: List of arguments Indexes.
- * @param arg TODO: Lists of arguments to assign.
- */
 void updateArg(size_t idf, initializer_list<size_t> ida, initializer_list<void*> arg);
 ```
+**Description**  
+Update a list of argument indexes for a function using initializer lists.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **ida** — List of argument indexes.  
+- **arg** — List of argument pointers to assign.
+
+---
+
 #### `template<size_t N> void updateArg(size_t idf, const size_t (&ida)[N], void* const (&arg)[N])`
 ```cpp
-/**
-* @brief TODO: Update the 'ida' list of arguments of 'idf' function, with 'arg' list.
- * @param idf TODO: Index of the function.
- * @param ida TODO: List of arguments Indexes.
- * @param arg TODO: Lists of arguments to assign.
- */
 template<size_t N> void updateArg(size_t idf, const size_t (&ida)[N], void* const (&arg)[N]);
 ```
+**Description**  
+Template overload to update multiple arguments at once using C-style arrays.
+
+**Parameters**
+- **idf** — Index of the function.  
+- **ida** — Array of argument indexes.  
+- **arg** — Array of argument pointers.
+
+---
+
 #### `void execute(int id)`
 ```cpp
-/**
- * @brief TODO: Computes every block in parallel.
- * @param id TODO: Index of the function to execute.
- */
 void execute(int id);
 ```
+**Description**  
+Computes every block in parallel for the function identified by `id`.
+
+**Parameters**
+- **id** — Index of the function to execute.
+
+---
+
 #### `void execute(const char* funcName)`
 ```cpp
-/**
- * @brief TODO: Computes every block in parallel.
- * @param charfuncName TODO: Name of the function to execute.
- */
 void execute(const char*funcName);
 ```
+**Description**  
+Computes every block in parallel for the function specified by name.
+
+**Parameters**
+- **funcName** — Name of the function to execute.
+
+---
+
 #### `void execute(void(*f)(csPARGS))`
 ```cpp
-/**
- * @brief TODO: Computes every block in parallel for the function specified by pointer 'f'.
- * @param f TODO: Pointer to the function to execute.
- */
 void execute(void(*f)(csPARGS));
 ```
+**Description**  
+Computes every block in parallel for the function specified by pointer `f`.
+
+**Parameters**
+- **f** — Pointer to the function to execute.
+
+---
+
 #### `void execute(vector<thread> threads)`
 ```cpp
-/**
- * @brief TODO: Describe the purpose of execute.
- * @param threads TODO: Table Threads to execute.
- */
 void execute(vector<thread> threads);
 ```
+**Description**  
+Executes a provided vector of `std::thread` objects (utility overload).
 
-End of `csPARALLEL.h` section.
+**Parameters**
+- **threads** — Table of threads to execute.
+
+---
+
 ---
 
 ## csPARGS.h
 
+**Class:** `csPARGS` — Manages arguments and block metadata passed to parallelized functions.
+
+### Constructors & utility
+
+#### `csPARGS(size_t nArgs=0)`
 ```cpp
-#pragma once
-
-#if defined _WIN32 || defined __CYGWIN__
-  #ifdef BUILDING_CSPARALLEL_DLL
-    #define CSPARALLEL_API __declspec(dllexport)
-  #else
-    #define CSPARALLEL_API __declspec(dllimport)
-  #endif
-#else
-  #ifdef BUILDING_CSPARALLEL_DLL
-    #define CSPARALLEL_API __attribute__ ((visibility ("default")))
-  #else
-    #define CSPARALLEL_API
-  #endif
-#endif
-
-#ifndef CSPARGS_H_INCLUDED
-#define CSPARGS_H_INCLUDED
-
-#include <iostream>
-#include <stdlib.h>
-#include <cstdarg>
-#include <thread>
-#include <mutex>
-
-#define CSTHREAD_NORMAL_EXECUTION 0
-#define CSTHREAD_BACKGROUND_EXECUTION 1
-
-
-template<class T> T* _csAlloc(size_t n)
-{
-  T*t = (T*)malloc(n*sizeof(T));
-  return t;
-}
-
-template<class T> T* _csAlloc(size_t n, T init)
-{
-  T*t = (T*)malloc(n*sizeof(T));
-  for(size_t i=0; i<n; i++)
-  {
-    t[i] = init;
-  }
-  return t;
-}
-
-class csPARGS
-{
-public:
-
-    typedef struct
-    {
-        size_t i;
-        void*arg;
-    }csVOID_ARG;
-
-    typedef struct
-    {
-      size_t first;
-      size_t last;
-    }BOUNDS;
-
-    csPARGS(size_t nArgs=0);
+csPARGS(size_t nArgs=0);
 ```
-### Class `csPARGS` — Methods & Descriptions
+**Description**  
+Constructs a `csPARGS` object with optional initial number of arguments.
 
-> Methods are presented with prototypes and original comment blocks preserved exactly.
+---
+
+### Methods & Operators
 
 #### `void init(size_t _nbArgs)`
 ```cpp
-/**
- * @brief TODO: Initializes an Object.
- * @param _nbArgs TODO: Number of arguments.
- */
 void init(size_t _nbArgs);
 ```
+**Description**  
+Initializes the object with the specified number of arguments.
+
+**Parameters**
+- **_nbArgs** — Number of arguments.
+
+---
+
 #### `void setArg(size_t i, void* arg)`
 ```cpp
-/**
- * @brief TODO: Sets up the argument indexed by 'i'.
- * @param i TODO: Index of the argument.
- * @param arg TODO: Void pointer containing the argument value to assign.
- */
-void  setArg(size_t i, void* arg);
+void setArg(size_t i, void* arg);
 ```
+**Description**  
+Sets the argument at index `i` to `arg`.
+
+**Parameters**
+- **i** — Index of the argument.  
+- **arg** — Void pointer to the argument value.
+
+---
+
 #### `void setArgNumber(size_t nbArgs)`
 ```cpp
-/**
- * @brief TODO: Sets up the number of arguments.
- * @param nbArgs TODO: Number of arguments.
- */
 void setArgNumber(size_t nbArgs);
 ```
+**Description**  
+Sets up the number of arguments.
+
+**Parameters**
+- **nbArgs** — Number of arguments.
+
+---
+
 #### `void setBounds(csPARGS::BOUNDS bounds)`
 ```cpp
-/**
- * @brief TODO: Sets up the work block bounds.
- * @param bounds TODO: Strucure 'csPARGS::BOUNDS' that contains the bounds of the work block.
- */
 void setBounds(csPARGS::BOUNDS bounds);
 ```
+**Description**  
+Sets the work block bounds.
+
+**Parameters**
+- **bounds** — `BOUNDS` structure with `first` and `last` indices.
+
+---
+
 #### `void setBlockId(size_t id)`
 ```cpp
-/**
- * @brief TODO: Saves the current block index;
- * @param id TODO: Index of the block.
- */
 void setBlockId(size_t id);
 ```
+**Description**  
+Saves the current block index.
+
+**Parameters**
+- **id** — Index of the block.
+
+---
+
 #### `void setBlocksNumber(size_t blockNumber)`
 ```cpp
-/**
- * @brief TODO: Saves the number of work blocks created.
- * @param blockNumber TODO: nNumber of work blocks created.
- */
 void setBlocksNumber(size_t blockNumber);
 ```
+**Description**  
+Saves the number of work blocks created.
+
+**Parameters**
+- **blockNumber** — Number of work blocks created.
+
+---
+
 #### `void setWorkSize(size_t workSize)`
 ```cpp
-/**
- * @brief TODO: Sets up the work size.
- * @param workSize TODO: Work size.
- */
 void setWorkSize(size_t workSize);
 ```
+**Description**  
+Sets the work size.
+
+**Parameters**
+- **workSize** — Work size.
+
+---
+
 #### `void setDelay(size_t delay)`
 ```cpp
-/**
- * @brief TODO: Sets up time delay in the thread.
- * @param delay TODO: Time delay.
- */
 void setDelay(size_t delay);
 ```
-#### Sleep helper methods
+**Description**  
+Sets time delay for the thread.
+
+**Parameters**
+- **delay** — Time delay in (expected nanoseconds).
+
+---
+
+#### Sleep helpers
 ```cpp
-/**
- * @brief TODO: Applies an hours delay in the thread.
- */
 void sleepHour();
-/**
- * @brief TODO: Applies a minutes delay in the thread.
- */
 void sleepMin();
-/**
- * @brief TODO: Applies a seconds delay in the thread.
- */
 void sleepSec();
-/**
- * @brief TODO: Applies a milliseconds delay in the thread.
- */
 void sleepMilli();
-/**
- * @brief TODO: Applies a microseconds delay in the thread.
- */
 void sleepMicro();
-/**
- * @brief TODO: Applies a nanoseconds delay in the thread.
- */
 void sleepNano();
 ```
+**Description**  
+Convenience methods to sleep the current thread by hours, minutes, seconds, milliseconds, microseconds, or nanoseconds.
+
+---
+
 #### `void* getArg(size_t i)`
 ```cpp
-/**
- * @brief TODO: Returns the argument indexed by 'i'.
- * @param i TODO: Index of the argument.
- * @return void* TODO: Void pointer containing the argument.
- */
 void* getArg(size_t i);
 ```
+**Description**  
+Returns the argument at index `i`.
+
+**Parameters**
+- **i** — Argument index.
+
+**Returns**  
+Void pointer to the argument.
+
+---
+
 #### `size_t getBlockId()`
 ```cpp
-/**
- * @brief TODO: Returns the current block index;
- * @return size_t TODO: Current block index;.
- */
 size_t getBlockId();
 ```
+**Description**  
+Returns the current block index.
+
+**Returns**  
+Current block index.
+
+---
+
 #### `size_t getBlocksNumber()`
 ```cpp
-/**
- * @brief TODO: Returns the number of work blocks created.
- * @return size_t TODO: Number of work blocks created.
- */
 size_t getBlocksNumber();
 ```
+**Description**  
+Returns the number of work blocks created.
+
+**Returns**  
+Number of blocks.
+
+---
+
 #### `csPARGS::BOUNDS getBounds()`
 ```cpp
-/**
- * @brief TODO: Returns the work block position;
- * @return csPARGS::BOUNDS TODO: Strucure 'csPARGS::BOUNDS' that contains the bounds of the work block.
- */
 csPARGS::BOUNDS getBounds();
 ```
-#### `void getBounds(size_t workSize, size_t*min, size_t*max)`
+**Description**  
+Returns the work block bounds for this `csPARGS` instance.
+
+**Returns**  
+`BOUNDS` structure with `first` and `last`.
+
+---
+
+#### `void getBounds(size_t workSize, size_t* min, size_t* max)`
 ```cpp
-/**
- * @brief TODO: Calculates the regular bounds of a work block following the 'workSize' parameter.
- * @param workSize TODO: Global size.
- * @param min TODO: Output lower bound.
- * @param max TODO: Output upper bound.
- */
 void getBounds(size_t workSize, size_t*min, size_t*max);
 ```
+**Description**  
+Calculates regular bounds of the work block following `workSize` and returns them via `min` and `max` pointers.
+
+**Parameters**
+- **workSize** — Global size.  
+- **min** — Output lower bound.  
+- **max** — Output upper bound.
+
+---
+
 #### `size_t getArgNumber()`
 ```cpp
-/**
- * @brief TODO: Returns the Number of registered arguments.
- * @return size_t TODO: Number of registered arguments.
- */
 size_t getArgNumber();
 ```
-#### Template `getArgPtr`
+**Description**  
+Returns the number of registered arguments.
+
+**Returns**  
+Number of arguments.
+
+---
+
+#### `template <class T> T* getArgPtr(size_t idArg)`
 ```cpp
-/**
- * @brief TODO: Returns a pointer to the argument indexed by 'idArg'.
- * @param idArg TODO: Index of the argument.
- * @return T* TODO: Void pointer to the argument.
- */
-template <class T> T* getArgPtr(size_t idArg)
-{
-    return (T*)Args[idArg+2];
-};
+template <class T> T* getArgPtr(size_t idArg);
 ```
+**Description**  
+Returns a typed pointer to the argument at `idArg` (internal storage offset +2).
+
+**Parameters**
+- **idArg** — Index of the argument.
+
+**Returns**  
+Pointer of type `T*` to the stored argument.
+
+---
+
 #### `size_t getWorkSize()`
 ```cpp
-/**
- * @brief TODO: Returns the work size.
- * @return size_t TODO: Work size.
- */
 size_t getWorkSize();
 ```
+**Description**  
+Returns the stored work size.
+
+**Returns**  
+Work size value.
+
+---
+
 #### `void makeArgs(...)` and `void makeArgs2(void** args, size_t nbArgs)`
 ```cpp
-/**
- * @brief TODO: Sets up arguments.
- * @param ... TODO: arguments.
- */
-void  makeArgs(...);
-/**
- * @brief TODO: Sets up arguments.
- * @param args TODO: Table of void pointers to arguments addresses.
- * @param nbArgs TODO: Number of arguments.
- */
-void  makeArgs2(void** args, size_t nbArgs);
+void makeArgs(...);
+void makeArgs2(void** args, size_t nbArgs);
+template<size_t _nbArgs> void makeArgs2(void* args[_nbArgs]);
 ```
-#### Template overload `makeArgs2(void* args[_nbArgs])`
-```cpp
-/**
- * @brief TODO: Sets up arguments.
- * @param args TODO: Table of void pointers to arguments addresses.
- * @param nbArgs TODO: Number of arguments.
- */
-template<size_t _nbArgs> void makeArgs2(void*args[_nbArgs]);
-```
+**Description**  
+Initialize the internal argument array from variadic arguments or from a provided array of void pointers.
+
+**Parameters for makeArgs2(void** args, size_t nbArgs)**
+- **args** — Table of void pointers to argument addresses.  
+- **nbArgs** — Number of arguments.
+
+---
+
 #### `void lockGuard()`
 ```cpp
-/**
- * @brief TODO: Activates mutex for safe thread coordination when accessing same ressources.
- */
 void lockGuard();
 ```
+**Description**  
+Activates an internal mutex for safe coordination when accessing shared resources.
+
+---
+
 #### `void clear()`
 ```cpp
-/**
- * @brief TODO: Release object.
- */
-void  clear();
+void clear();
 ```
-#### Conversion operators & index operators
+**Description**  
+Releases internal resources of the `csPARGS` object.
+
+---
+
+#### Conversion & operator overloads
 ```cpp
-/**
- * @brief TODO: Returns the boundaries of the work section where current thread is executed.
- * @return csPARGS::BOUNDS TODO: Boundaries of the work section.
- */
 operator csPARGS::BOUNDS();
-/**
- * @brief TODO: Returns index of the current thread.
- * @return size_t TODO: Index of the current thread.
- */
 operator size_t();
-/**
- * @brief TODO: Returns a void pointer to the argument indexed by 'i'.
- * @return void* TODO: Void pointer to the argument.
- */
 void* operator[](size_t i);
-/**
- * @brief TODO: Assign a new void pointer to the argument indexed by the member 'i' of the 'va' object.
- * @return void* TODO: Index of the current thread.
- */
 void operator=(csVOID_ARG va);
 ```
+**Description**  
+- `operator csPARGS::BOUNDS()` — returns bounds.  
+- `operator size_t()` — returns the block index.  
+- `operator[]` — returns argument pointer at index.  
+- `operator=` — assign a `csVOID_ARG` to set argument.
+
+---
+
 #### `bool EXEC_MODE`
 ```cpp
-/**
- * @brief TODO: Defines weather the thread will be executed normally or in background. Can be : CSTHREAD_NORMAL_EXECUTION or CSTHREAD_BACKGROUND_EXECUTION
- */
 bool EXEC_MODE = CSTHREAD_NORMAL_EXECUTION;
 ```
-End of `csPARGS.h` section.
+**Description**  
+Defines whether the thread will be executed normally or in background. Can be `CSTHREAD_NORMAL_EXECUTION` or `CSTHREAD_BACKGROUND_EXECUTION`.
+
 ---
 
 ## csPERF_MEASUREMENT.h
 
+**Class:** `csPERF_MEASUREMENT` — Simple timing utility for measuring code execution.
+
+### Constants
 ```cpp
-#pragma once
-
-#if defined _WIN32 || defined __CYGWIN__
-  #ifdef BUILDING_CSPARALLEL_DLL
-    #define CSPARALLEL_API __declspec(dllexport)
-  #else
-    #define CSPARALLEL_API __declspec(dllimport)
-  #endif
-#else
-  #ifdef BUILDING_CSPARALLEL_DLL
-    #define CSPARALLEL_API __attribute__ ((visibility ("default")))
-  #else
-    #define CSPARALLEL_API
-  #endif
-#endif
-
-#ifndef CSPERF_MEASUREMENT_H
-#define CSPERF_MEASUREMENT_H
-
-#include <chrono>
-#include <iostream>
-
 #define CSTIME_UNIT_HOUR            0
 #define CSTIME_UNIT_MINUTE          1
 #define CSTIME_UNIT_SECOND          2
@@ -681,54 +747,115 @@ End of `csPARGS.h` section.
 #define CSTIME_UNIT_MICROSECOND     4
 #define CSTIME_UNIT_NANOSECOND      5
 ```
-### Class `csPERF_MEASUREMENT` — Overview & Methods
 
+### Methods
+
+#### `csPERF_MEASUREMENT(int unit = CSTIME_UNIT_MICROSECOND)`
 ```cpp
-class csPERF_MEASUREMENT
-{
-  private:
-  std::chrono::time_point<std::chrono::high_resolution_clock>
-  strt, stp;
-  size_t ellapsed;
-  int unit = CSTIME_UNIT_MICROSECOND;
-  char*unitName = " microseconds\0";
-
-  public:
-/**
- * @brief TODO: Constructor.
- * @param unit TODO: Time unit.
- */
-  csPERF_MEASUREMENT(int unit = CSTIME_UNIT_MICROSECOND);
-/**
- * @brief TODO: Sets up the time unit.
- * @param unit TODO: Time unit.
- */
-  void setTimeUnit(int unit);
-/**
- * @brief TODO: Starts measuring execution time.
- */
-  void start();
-/**
- * @brief TODO: Stop measuring execution time.
- */
-  void stop();
-/**
- * @brief TODO: Print the execution time for a code block
- * @param title TODO: Output Title.
- */
-  void printReport(const char* title);
-/**
- * @brief TODO: Returns execution time for a code block.
- * @return size_t TODO: Execution time.
- */
-  size_t getEllapsedTime();
-};
+csPERF_MEASUREMENT(int unit = CSTIME_UNIT_MICROSECOND);
 ```
-End of `csPERF_MEASUREMENT.h` section.
+**Description**  
+Constructor. Optionally sets the time unit for measurements.
+
+**Parameters**
+- **unit** — Time unit (use defined constants).
+
 ---
 
-### Footer & notes
+#### `void setTimeUnit(int unit)`
+```cpp
+void setTimeUnit(int unit);
+```
+**Description**  
+Sets up the time unit for reported measurements.
 
-This API-style documentation reproduces the prototypes and comments exactly from the header files and reorganises them for display on GitHub with a clickable Table of Contents and code-first presentation.
+**Parameters**
+- **unit** — Time unit constant.
 
 ---
+
+#### `void start()`
+```cpp
+void start();
+```
+**Description**  
+Starts measuring execution time.
+
+---
+
+#### `void stop()`
+```cpp
+void stop();
+```
+**Description**  
+Stops the measurement and records elapsed time.
+
+---
+
+#### `void printReport(const char* title)`
+```cpp
+void printReport(const char* title);
+```
+**Description**  
+Prints the execution time for a code block with a given title.
+
+**Parameters**
+- **title** — Output title.
+
+---
+
+#### `size_t getEllapsedTime()`
+```cpp
+size_t getEllapsedTime();
+```
+**Description**  
+Returns the last measured execution time.
+
+**Returns**  
+Elapsed time in the configured unit.
+
+---
+
+## Examples
+
+### Example 1 — Parallel computation with `csParallelTask`
+```cpp
+void compute(csPARGS args) {
+    auto b = args.getBounds();
+    double* data = args.getArgPtr<double>(0);
+    for(size_t i = b.first; i < b.last; ++i)
+        data[i] = sqrt(data[i]);
+}
+
+int main() {
+    size_t workSize = 100000;
+    size_t nBlocks = 8;
+    double data[workSize];
+
+    size_t id = csParallelTask::registerFunctionRegularEx(
+        nBlocks, workSize, "sqrtTask", compute, (void*)data
+    );
+    csParallelTask::execute(id);
+}
+```
+
+### Example 2 — Using `csPARGS` to handle thread-specific data
+```cpp
+csPARGS args(3);
+int x = 1, y = 2, z = 3;
+args.makeArgs2((void*[]){&x, &y, &z});
+args.setBounds({0, 100});
+args.setDelay(1000);
+```
+
+### Example 3 — Measuring performance
+```cpp
+csPERF_MEASUREMENT perf(CSTIME_UNIT_MILLISECOND);
+perf.start();
+// Code block to measure
+perf.stop();
+perf.printReport("Parallel execution time");
+```
+
+---
+_End of documentation._
