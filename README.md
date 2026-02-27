@@ -100,6 +100,8 @@ python scripts/plot_benchmark.py sortie.txt
 
 The figure is saved as `csParallelTask_benchmark.png` with machine characteristics in the title.
 
+![csParallelTask benchmark](csParallelTask_benchmark.png)
+
 ---
 
 ## ⚙️ Build Instructions
