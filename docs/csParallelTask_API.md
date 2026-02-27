@@ -276,7 +276,7 @@ Unregisters all registered functions and clears their arguments.
 size_t getSafeThreadNumber(size_t nThread);
 ```
 **Description**  
-Returns `min(nThread, getMaxThreadNumber())`.
+Returns `min(nThread, getHardwareConcurrency())`.
 
 **Parameters**
 - **nThread** — Number of threads requested.
@@ -286,9 +286,9 @@ Adjusted number of threads to use.
 
 ---
 
-#### `size_t getMaxThreadNumber()`
+#### `size_t getHardwareConcurrency()`
 ```cpp
-size_t getMaxThreadNumber();
+size_t getHardwareConcurrency();
 ```
 **Description**  
 Gives the number of physical units of the CPU (available threads).

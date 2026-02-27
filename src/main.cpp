@@ -172,7 +172,9 @@ static void print_perf(const char* label_seq, size_t t_seq, const char* label_pa
 // ---- Main ----
 
 int main() {
-    cout << "csParallelTask - " << getMaxThreadNumber() << " threads\n  N = " << N << "\n";
+    size_t nThreads = 8;//getSafeThreadNumber(getHardwareConcurrency());
+    
+    cout << "csParallelTask - " << nThreads << " threads\n  N = " << N << "\n";
 
     vector<double> data(N), data2(N);
     for (size_t i = 0; i < N; i++) {
@@ -181,7 +183,6 @@ int main() {
     }
 
     CSPERF_CHECKER perf(UNIT);
-    size_t nThreads = getSafeThreadNumber(getMaxThreadNumber());
 
     // -------------------------------------------------------------------------
     print_section("1. Somme des elements");
@@ -191,7 +192,7 @@ int main() {
     perf.stop();
     size_t t_sum_seq = perf.getEllapsedTime();
 
-    size_t id_sum = registerFunctionRegularEx(nThreads, N, (char*)"sum", kernel_sum,
+    size_t id_sum = registerFunctionRegularEx(nThreads, N, "sum", kernel_sum,
         data.data(), &sum_par);
     perf.start();
     execute(id_sum);
@@ -201,7 +202,6 @@ int main() {
     cout << "  sum (seq) = " << fixed << setprecision(6) << sum_seq << "\n";
     cout << "  sum (par) = " << sum_par << "\n";
     print_perf("Temps seq", t_sum_seq, "Temps par", t_sum_par);
-    unregisterFunction(id_sum);
 
     // -------------------------------------------------------------------------
     print_section("2. Scale (in-place)");
@@ -215,7 +215,7 @@ int main() {
 
     vector<double> data_scale2 = data;
     double factor2 = 2.5;
-    size_t id_scale = registerFunctionRegularEx(nThreads, N, (char*)"scale", kernel_scale,
+    size_t id_scale = registerFunctionRegularEx(nThreads, N, "scale", kernel_scale,
         data_scale2.data(), &factor2);
     perf.start();
     execute(id_scale);
@@ -224,7 +224,6 @@ int main() {
 
     cout << "  scale(2.5) - premiers: " << data_scale2[0] << " " << data_scale2[1] << "\n";
     print_perf("Temps seq", t_scale_seq, "Temps par", t_scale_par);
-    unregisterFunction(id_scale);
 
     // -------------------------------------------------------------------------
     print_section("3. Minimum");
@@ -234,7 +233,7 @@ int main() {
     perf.stop();
     size_t t_min_seq = perf.getEllapsedTime();
 
-    size_t id_min = registerFunctionRegularEx(nThreads, N, (char*)"min", kernel_min,
+    size_t id_min = registerFunctionRegularEx(nThreads, N, "min", kernel_min,
         data.data(), &min_par);
     perf.start();
     execute(id_min);
@@ -243,7 +242,6 @@ int main() {
 
     cout << "  min (seq) = " << min_seq << "  min (par) = " << min_par << "\n";
     print_perf("Temps seq", t_min_seq, "Temps par", t_min_par);
-    unregisterFunction(id_min);
 
     // -------------------------------------------------------------------------
     print_section("4. Maximum");
@@ -253,7 +251,7 @@ int main() {
     perf.stop();
     size_t t_max_seq = perf.getEllapsedTime();
 
-    size_t id_max = registerFunctionRegularEx(nThreads, N, (char*)"max", kernel_max,
+    size_t id_max = registerFunctionRegularEx(nThreads, N, "max", kernel_max,
         data.data(), &max_par);
     perf.start();
     execute(id_max);
@@ -262,7 +260,6 @@ int main() {
 
     cout << "  max (seq) = " << max_seq << "  max (par) = " << max_par << "\n";
     print_perf("Temps seq", t_max_seq, "Temps par", t_max_par);
-    unregisterFunction(id_max);
 
     // -------------------------------------------------------------------------
     print_section("5. Produit scalaire");
@@ -272,7 +269,7 @@ int main() {
     perf.stop();
     size_t t_dot_seq = perf.getEllapsedTime();
 
-    size_t id_dot = registerFunctionRegularEx(nThreads, N, (char*)"dot", kernel_dot,
+    size_t id_dot = registerFunctionRegularEx(nThreads, N, "dot", kernel_dot,
         data.data(), data2.data(), &dot_par);
     perf.start();
     execute(id_dot);
@@ -281,7 +278,6 @@ int main() {
 
     cout << "  dot (seq) = " << dot_seq << "  dot (par) = " << dot_par << "\n";
     print_perf("Temps seq", t_dot_seq, "Temps par", t_dot_par);
-    unregisterFunction(id_dot);
 
     // -------------------------------------------------------------------------
  
@@ -294,7 +290,7 @@ int main() {
     perf.stop();
     size_t t_fill_seq = perf.getEllapsedTime();
 
-    size_t id_fill = registerFunctionRegularEx(nThreads, N, (char*)"fill", kernel_fill,
+    size_t id_fill = registerFunctionRegularEx(nThreads, N,  "fill", kernel_fill,
         data_fill2.data(), &fill_val);
     perf.start();
     execute(id_fill);
@@ -303,7 +299,6 @@ int main() {
 
     cout << "  fill(3.14) - premiers: " << data_fill2[0] << " " << data_fill2[1] << "\n";
     print_perf("Temps seq", t_fill_seq, "Temps par", t_fill_par);
-    unregisterFunction(id_fill);
 
     // -------------------------------------------------------------------------
     print_section("7. Norme L2 (sum of squares + sqrt)");
@@ -313,7 +308,7 @@ int main() {
     perf.stop();
     size_t t_norm_seq = perf.getEllapsedTime();
 
-    size_t id_sq = registerFunctionRegularEx(nThreads, N, (char*)"sqsum", kernel_sqsum,
+    size_t id_sq = registerFunctionRegularEx(nThreads, N, "sqsum", kernel_sqsum,
         data.data(), &norm_par);
     perf.start();
     execute(id_sq);
@@ -323,25 +318,23 @@ int main() {
 
     cout << "  norm (seq) = " << norm_seq << "  norm (par) = " << norm_par << "\n";
     print_perf("Temps seq", t_norm_seq, "Temps par", t_sq_par);
-    unregisterFunction(id_sq);
 
     // -------------------------------------------------------------------------
     print_section("8. Execution par nom (execute par nom)");
-    size_t id_by_name = registerFunctionRegularEx(nThreads, N, (char*)"scale_by_name", kernel_scale,
+    size_t id_by_name = registerFunctionRegularEx(nThreads, N, "scale_by_name", kernel_scale,
         data.data(), &factor);
     perf.start();
     execute("scale_by_name");
     perf.stop();
     size_t t_by_name = perf.getEllapsedTime();
     cout << "  execute(\"scale_by_name\") : " << t_by_name << " us\n";
-    unregisterFunction(id_by_name);
 
     // -------------------------------------------------------------------------
     print_section("9. Resize + updateArg (meme fonction, autre taille)");
     size_t N2 = N / 2;
     vector<double> small(N2, 1.0);
     double sum_small = 0.0;
-    size_t id_resize = registerFunctionRegularEx(nThreads, N2, (char*)"sum_resize", kernel_sum,
+    size_t id_resize = registerFunctionRegularEx(nThreads, N2, "sum_resize", kernel_sum,
         small.data(), &sum_small);
 
     perf.start();
@@ -359,7 +352,6 @@ int main() {
     perf.stop();
     size_t t2 = perf.getEllapsedTime();
     cout << "  sum(small, N)   = " << sum_small << "  temps: " << t2 << " us (apres setBufferShapeRegular + updateArg)\n";
-    unregisterFunction(id_resize);
 
     // -------------------------------------------------------------------------
     print_section("10. AXPY (y = alpha*x + y)");
@@ -373,7 +365,7 @@ int main() {
 
     vector<double> y_axpy2(N, 1.0);
     double alpha2 = 0.5;
-    size_t id_axpy = registerFunctionRegularEx(nThreads, N, (char*)"axpy", kernel_axpy,
+    size_t id_axpy = registerFunctionRegularEx(nThreads, N, "axpy", kernel_axpy,
         data.data(), y_axpy2.data(), &alpha2);
     perf.start();
     execute(id_axpy);

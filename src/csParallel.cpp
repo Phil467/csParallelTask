@@ -18,14 +18,14 @@ using namespace csParallelTask;
 /****************************************/
 
 
-size_t CS_PARALLEL_TASK_API csParallelTask::getMaxThreadNumber()
+size_t CS_PARALLEL_TASK_API csParallelTask::getHardwareConcurrency()
 {
     return std::thread::hardware_concurrency();
 }
 
 size_t CS_PARALLEL_TASK_API csParallelTask::getSafeThreadNumber(size_t n)
 {
-  return std::min(n,getMaxThreadNumber());
+  return std::min(n,getHardwareConcurrency());
 }
 
 CSPARGS CS_PARALLEL_TASK_API csParallelTask::getArgs(size_t idf, size_t ida)
@@ -90,7 +90,7 @@ void CS_PARALLEL_TASK_API csParallelTask::setArgsRegular(size_t idf, size_t work
   free(shape);
 }
 
-size_t CS_PARALLEL_TASK_API csParallelTask::registerFunction(size_t _nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*Function)(CSPARGS), CSPARGS funcArgs)
+size_t CS_PARALLEL_TASK_API csParallelTask::registerFunction(size_t _nBlocks, size_t workSize, BUFFER_SHAPE shape, const char* fName, void(*Function)(CSPARGS), CSPARGS funcArgs)
 {
   size_t nBlocks = getSafeThreadNumber(_nBlocks);
   size_t k = BLOCK_FUNC.size();
@@ -121,15 +121,15 @@ size_t CS_PARALLEL_TASK_API csParallelTask::registerFunction(size_t _nBlocks, si
     BLOCK_ARGS.push_back(pargs);
     THREAD_GLOBAL_SIZE.push_back(workSize);
 
-    if(!fName)
+    if(!(char*)fName)
     {
-      char str[100];
+      char str[100] = {0};
       sprintf(str,"%zu", THREAD_NAME.size());
       THREAD_NAME.push_back(str);
     }
     else
     {
-      THREAD_NAME.push_back(fName);
+      THREAD_NAME.push_back((char*)fName);
     }
     }
     else
@@ -138,7 +138,7 @@ size_t CS_PARALLEL_TASK_API csParallelTask::registerFunction(size_t _nBlocks, si
     return k;
 }
 
-size_t CS_PARALLEL_TASK_API csParallelTask::registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*Function)(CSPARGS), size_t nbArgs,...)
+size_t CS_PARALLEL_TASK_API csParallelTask::registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, const char* fName, void(*Function)(CSPARGS), size_t nbArgs,...)
 {
   va_list adArgs ;
   void* parv;
@@ -156,7 +156,7 @@ size_t CS_PARALLEL_TASK_API csParallelTask::registerFunctionEx(size_t nBlocks, s
   return registerFunction(nBlocks, workSize, shape, fName, Function, funcArgs);
 }
 
-size_t CS_PARALLEL_TASK_API csParallelTask::registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*Function)(CSPARGS), size_t nbArgs,...)
+size_t CS_PARALLEL_TASK_API csParallelTask::registerFunctionRegularEx(size_t nBlocks, size_t workSize, const char* fName, void(*Function)(CSPARGS), size_t nbArgs,...)
 {
   va_list adArgs ;
   void* parv;

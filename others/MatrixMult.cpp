@@ -103,7 +103,7 @@ int main()
 
     // Prepare parallel processing
     size_t workSize = A.rows;  // Total number of rows to process
-    size_t nThreads = csParallelTask::getMaxThreadNumber();
+    size_t nThreads = csParallelTask::getHardwareConcurrency();
 
     // Register the parallel function using registerFunctionRegularEx
     // Note: This version doesn't require specifying the number of arguments

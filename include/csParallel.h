@@ -114,7 +114,7 @@ BUFFER_SHAPE  makeRegularBufferShape(size_t workSize, size_t nBlocks);
  * @param funcArgs CSPARGS object containing the arguments of the function.
  * @return Index of the registered function.
  */
-size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char* fName, void(*blockFunc)(CSPARGS), CSPARGS funcArgs);
+size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, const char* fName, void(*blockFunc)(CSPARGS), CSPARGS funcArgs);
 /**
  * @brief Extended registration of a new function. Allows specifying argument pointers directly instead of providing a CSPARGS object, unlike registerFunction.
  * @param nBlocks Number of buffer blocks, each corresponding to a thread.
@@ -125,7 +125,7 @@ size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, cha
  * @param nbArgs Number of arguments passed variadically after @p nbArgs.
  * @return Index of the registered function.
  */
-size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*blockFunc)(CSPARGS), size_t nbArgs,...);
+size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, const char* fName, void(*blockFunc)(CSPARGS), size_t nbArgs,...);
 /**
  * @brief Extended registration of a new function with regular buffer blocks. Arguments are specified directly via pointers.
  * @param nBlocks Number of buffer blocks, each corresponding to a thread.
@@ -135,7 +135,7 @@ size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, c
  * @param nbArgs Number of arguments passed variadically after @p nbArgs.
  * @return Index of the registered function.
  */
-size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*blockFunc)(CSPARGS), size_t nbArgs,...);
+size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, const char* fName, void(*blockFunc)(CSPARGS), size_t nbArgs,...);
 /**
  * @brief Convenience template for extended registration with regular blocks. Builds the argument array from variadic pointers and delegates to registerFunction.
  * @param nBlocks Number of buffer blocks, each corresponding to a thread.
@@ -145,7 +145,7 @@ size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, vo
  * @param arg Void pointer to the first argument.
  * @param args Other argument pointers (variadic).
  */
-template<typename... _Args> size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*Function)(CSPARGS), void*arg, _Args... args)
+template<typename... _Args> size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, const char* fName, void(*Function)(CSPARGS), void*arg, _Args... args)
 {
   void **Args = 0;
   size_t nbArgs = 0;
@@ -170,16 +170,16 @@ void unregisterFunction(size_t idf);
  */
 void unregisterAll();
 /**
- * @brief Returns min(nThread, getMaxThreadNumber()), where getMaxThreadNumber() gives the number of hardware threads of the CPU.
+ * @brief Returns min(nThread, getHardwareConcurrency()), where getHardwareConcurrency() gives the number of hardware threads of the CPU.
  * @param nThread Requested number of threads.
- * @return min(nThread, getMaxThreadNumber()).
+ * @return min(nThread, getHardwareConcurrency()).
  */
 size_t getSafeThreadNumber(size_t nThread);
 /**
  * @brief Returns the number of hardware threads (CPU cores/threads) available on the machine.
  * @return Number of hardware threads.
  */
-size_t getMaxThreadNumber();
+size_t getHardwareConcurrency();
 /**
  * @brief Returns the CSPARGS objects for all buffer blocks of the specified function.
  * @param idf Index of the function.
