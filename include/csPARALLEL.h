@@ -25,7 +25,7 @@
 #include <string.h>
 #include <memoryapi.h>
 #include "csPARGS.h"
-#include "csPERF_MEASUREMENT.h"
+#include "csPerfChecker.h"
 
 using namespace std;
 
@@ -157,6 +157,15 @@ template<typename... _Args> size_t registerFunctionRegularEx(size_t nBlocks, siz
   free(shape);
   return idf;
 };
+/**
+ * @brief TODO: Unregister the function indexed by 'idf' and remove its arguments.
+ * @param idf TODO: Index of the function to unregister.
+ */
+void unregisterFunction(size_t idf);
+/**
+ * @brief TODO: Unregister all registered functions and clear their arguments.
+ */
+void unregisterAll();
 /**
  * @brief TODO: Returns min(nThread, getMaxThreadNumber()), where 'getMaxThreadNumber()' function gives the number of physical units of the CPU.
  * @param nThread TODO: Number of thread needed.

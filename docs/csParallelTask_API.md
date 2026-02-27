@@ -7,18 +7,18 @@ It preserves original descriptions and parameter details but presents them in a 
 ---
 
 ## Table of Contents
-- [csPARALLEL.h](#csparallelh)
+- [csParallel.h](#csparallelh)
   - [Templates & Utilities](#templates--utilities)
   - [Functions](#functions)
 - [csPARGS.h](#cspargsh)
   - [Class `csPARGS` — Methods & Operators](#class-cspargs---methods--operators)
-- [csPERF_MEASUREMENT.h](#csperf_measurementh)
-  - [Class `csPERF_MEASUREMENT` — Methods](#class-csperf_measurement---methods)
+- [csPerfChecker.h](#csperfcheckerh)
+  - [Class `csPERF_CHECKER` — Methods](#class-csperf_checker---methods)
 - [Examples](#examples)
 
 ---
 
-## csPARALLEL.h
+## csParallel.h
 
 **Namespace:** `csParallelTask` — Utilities to register functions, prepare argument buffers and execute tasks in parallel.
 
@@ -247,6 +247,27 @@ Template helper that builds the `Args` array from variadic pointers, constructs 
 
 **Returns**  
 Index of the registered function.
+
+---
+
+#### `void unregisterFunction(size_t idf)`
+```cpp
+void unregisterFunction(size_t idf);
+```
+**Description**  
+Unregisters the function indexed by `idf` and removes its arguments. Calls `clear()` on all associated `csPARGS` to avoid memory leaks.
+
+**Parameters**
+- **idf** — Index of the function to unregister.
+
+---
+
+#### `void unregisterAll()`
+```cpp
+void unregisterAll();
+```
+**Description**  
+Unregisters all registered functions and clears their arguments.
 
 ---
 
@@ -734,9 +755,9 @@ Defines whether the thread will be executed normally or in background. Can be `C
 
 ---
 
-## csPERF_MEASUREMENT.h
+## csPerfChecker.h
 
-**Class:** `csPERF_MEASUREMENT` — Simple timing utility for measuring code execution.
+**Class:** `csPERF_CHECKER` — Simple timing utility for measuring code execution.
 
 ### Constants
 ```cpp
@@ -750,7 +771,7 @@ Defines whether the thread will be executed normally or in background. Can be `C
 
 ### Methods
 
-#### `csPERF_MEASUREMENT(int unit = CSTIME_UNIT_MICROSECOND)`
+#### `csPERF_CHECKER(int unit = CSTIME_UNIT_MICROSECOND)`
 ```cpp
 csPERF_MEASUREMENT(int unit = CSTIME_UNIT_MICROSECOND);
 ```
@@ -850,7 +871,7 @@ args.setDelay(1000);
 
 ### Example 3 — Measuring performance
 ```cpp
-csPERF_MEASUREMENT perf(CSTIME_UNIT_MILLISECOND);
+csPERF_CHECKER perf(CSTIME_UNIT_MICROSECOND);
 perf.start();
 // Code block to measure
 perf.stop();

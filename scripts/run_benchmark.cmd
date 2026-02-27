@@ -1,0 +1,1 @@
+python scripts/plot_benchmark.py scripts/sortie.txt

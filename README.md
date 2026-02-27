@@ -9,37 +9,31 @@ The csParallelTask library is a powerful and flexible parallelization solution f
 - 🧩 **Simplified Parallelization**: Easily transform sequential operations into parallel processes without directly managing thread complexities.
 - 🔄 **Automatic Adaptation**: Dynamically adjusts to the number of available cores on the machine for optimal resource utilization.
 - 📦 **Flexible Argument Management**: Advanced mechanisms for passing and sharing data between worker threads.
-- ⏱️ **Integrated Performance Measurements**: Precise timing tools to evaluate performance gains.
+- ⏱️ **Integrated Performance Measurements**: Precise timing tools (`csPERF_CHECKER`) to evaluate performance gains.
 - 🎮 **Execution Control**: Options for synchronous or asynchronous (background) executions.
+- 🔓 **Task Lifecycle**: Register tasks with `registerFunction*`, unregister with `unregisterFunction` or `unregisterAll`.
 
 ## Complex Tasks Optimized by csParallelTask
 
 1. 🖼️ **High-Resolution Image Processing**: Divide an image into sections and apply filters or transformations in parallel, significantly reducing processing time.
-
 2. 🔬 **Scientific Simulations**: Distribute intensive numerical calculations across multiple cores to accelerate physical, chemical, or other complex mathematical models.
-
 3. 📊 **Large Data Analysis**: Process big datasets in parallel, with automatic load distribution among available threads.
-
 4. 🔍 **Search and Sorting Algorithms**: Efficiently implement parallel search or sorting algorithms on large data collections.
-
 5. 🧮 **Matrix Computations**: Perform operations on large matrices by dividing the work into blocks for optimal performance.
-
 6. 🎨 **Graphical Rendering**: Accelerate 3D rendering calculations by parallelizing operations by zones or objects.
-
 7. 🗜️ **Data Compression/Decompression**: Process multiple data segments simultaneously to improve compression algorithm performance.
-
 8. 🌳 **Tree Traversals**: Explore complex tree structures in parallel for applications.
 
 ## Core Components
 
 ### csPARGS
-Manages arguments and boundaries for parallel work blocks, providing a clean interface for thread communication.
+Manages arguments and boundaries for parallel work blocks, providing a clean interface for thread communication. Use `clear()` to free resources before discarding.
 
-### csPERF_MEASUREMENT
-Offers precise timing capabilities from nanoseconds to hours to measure and optimize parallel execution performance.
+### csPERF_CHECKER
+Offers precise timing capabilities (nanoseconds to hours) to measure and optimize parallel execution performance.
 
 ### csParallelTask Namespace
-Contains the main functionality for creating, managing, and executing parallel tasks with flexible control over execution parameters.
+Contains the main functionality for creating, managing, and executing parallel tasks: `registerFunction*`, `execute`, `unregisterFunction`, `unregisterAll`, `setBufferShapeRegular`, `updateArg`, etc.
 
 ## Benefits
 
@@ -61,21 +55,50 @@ size_t taskId = csParallelTask::registerFunctionRegularEx(
 
 // Execute the parallel task
 csParallelTask::execute(taskId);
+
+// When done
+csParallelTask::unregisterFunction(taskId);
 ```
 
 ## Performance Measurement
 
 ```cpp
 // Measure execution time
-csPERF_MEASUREMENT timer(CSTIME_UNIT_MILLISECOND);
-timer.start();
-
-// Execute parallel processing
+csPERF_CHECKER perf(CSTIME_UNIT_MICROSECOND);
+perf.start();
 csParallelTask::execute("processData");
-
-timer.stop();
-timer.printReport("Data processing completed in: ");
+perf.stop();
+perf.printReport("Data processing completed in: ");
 ```
+
+## Benchmark Program and Visualization
+
+The `main.cpp` test program runs 11 benchmarks comparing sequential vs parallel execution:
+
+1. Somme des éléments  
+2. Scale (in-place)  
+3. Minimum, 4. Maximum  
+5. Produit scalaire  
+6. Remplissage (fill)  
+7. Norme L2  
+8. Exécution par nom  
+9. Resize + updateArg  
+10. AXPY (y = alpha*x + y)  
+11. Tri par segments  
+
+A Python script generates bar charts from the benchmark output:
+
+```bash
+# Run the benchmark and save output
+build\csParallelTask_test.exe > sortie.txt
+
+# Generate chart (requires matplotlib)
+pip install matplotlib
+python scripts/plot_benchmark.py sortie.txt
+# Or: build\csParallelTask_test.exe | python scripts/plot_benchmark.py
+```
+
+The figure is saved as `csParallelTask_benchmark.png` with machine characteristics in the title.
 
 ---
 
@@ -88,6 +111,12 @@ mkdir build && cd build
 cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 mingw32-make
 ```
+
+### 🔷 Windows (build.cmd)
+```cmd
+build.cmd
+```
+
 ### 🔷 Windows (MSYS2 CLANG64)
 ```bash
 pacman -S mingw-w64-clang-x86_64-toolchain cmake ninja
@@ -95,6 +124,7 @@ mkdir build && cd build
 cmake .. -G Ninja
 ninja
 ```
+
 ### 🐧 Linux / 🍎 macOS
 ```bash
 sudo apt install g++ cmake ninja-build   # Or use clang++
@@ -103,18 +133,27 @@ cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja
 ```
 
+> **Note:** The `build/` directory is listed in `.gitignore` and should not be versioned.
 
 ## 📁 Directory Structure
 
-```bash
+```
 csParallelTask/
-├── include/               # Public headers
-│   ├── csPARALLEL.h
-│   ├── csPARGS.h
-│   └── csPERF_MEASUREMENT.h
-├── src/                   # Source files
-├── test/                  # Optional test programs
-├── build/                 # Out-of-source build directory
+├── include/                 # Public headers
+│   ├── csParallel.h
+│   ├── csPargs.h
+│   └── csPerfChecker.h
+├── src/                     # Source files
+│   ├── csParallel.cpp
+│   ├── csPargs.cpp
+│   ├── csPerfChecker.cpp
+│   └── main.cpp             # Benchmark program
+├── scripts/
+│   └── plot_benchmark.py    # Benchmark visualization
+├── docs/
+│   └── csParallelTask_API.md   # API reference
+├── build.cmd                # Quick build (Windows)
+├── .gitignore
 ├── README.md
 └── LICENSE
 ```

@@ -1,19 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
-project(csParallelTask VERSION 1.0.0 LANGUAGES CXX)
+project(csParallelTask LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+add_definitions(-DBUILDING_CSPARALLEL_DLL)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
+# bibliotheque statique
+add_library(csParallelTask SHARED src/csParallel.cpp src/csPerfChecker.cpp src/csPargs.cpp)
+target_include_directories(csParallelTask PUBLIC include)
 
-add_library(csParallelTask SHARED ${SOURCES})
-
-add_executable(csParallelTaskTest test/MatrixMult_Perf_Compare.cpp)
-target_link_libraries(csParallelTaskTest PRIVATE csParallelTask)
-
-install(TARGETS csParallelTask DESTINATION lib)
-install(DIRECTORY include/ DESTINATION include)
-
-include(GNUInstallDirs)
+# executable
+# add_executable(csParallelTask_test src/main.cpp)
+# target_link_libraries(csParallelTask_test PRIVATE csParallelTask)

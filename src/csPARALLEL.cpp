@@ -2,8 +2,8 @@
 #include <iostream>
 #include <functional>
 #include <thread>
-#include "csPARGS.h"
-#include "csPARALLEL.h"
+#include "csPargs.h"
+#include "csParallel.h"
 
 
 using namespace std;
@@ -63,7 +63,6 @@ void CSPARALLEL_API csParallelTask::setArgs(size_t idf, BUFFER_SHAPE shape, csPA
   size_t nBlocks = BLOCK_ARGS[idf].size();
   if (nBlocks>0)
   {
-
     vector<csPARGS> *arg = &BLOCK_ARGS[idf];
 
     size_t nbArgs = funcArgs.getArgNumber();
@@ -80,7 +79,6 @@ void CSPARALLEL_API csParallelTask::setArgs(size_t idf, BUFFER_SHAPE shape, csPA
       {
         (*arg)[i].setArg(j,funcArgs.getArg(j));
       }
-
     }
   }
 }
@@ -180,6 +178,46 @@ size_t CSPARALLEL_API csParallelTask::registerFunctionRegularEx(size_t nBlocks, 
   size_t idf = registerFunction(nBlocks, workSize, shape, fName, Function, funcArgs);
   free(shape);
   return idf;
+}
+
+void CSPARALLEL_API csParallelTask::unregisterFunction(size_t idf)
+{
+  if (idf >= BLOCK_FUNC.size())
+  {
+    cout<<"invalid function id !\n";
+    return;
+  }
+
+  // Libérer correctement les csPARGS associés
+  size_t nBlocks = BLOCK_ARGS[idf].size();
+  for(size_t i = 0; i < nBlocks; i++)
+  {
+    BLOCK_ARGS[idf][i].clear();
+  }
+
+  BLOCK_FUNC.erase(BLOCK_FUNC.begin() + idf);
+  BLOCK_ARGS.erase(BLOCK_ARGS.begin() + idf);
+  THREAD_NAME.erase(THREAD_NAME.begin() + idf);
+  THREAD_GLOBAL_SIZE.erase(THREAD_GLOBAL_SIZE.begin() + idf);
+}
+
+void CSPARALLEL_API csParallelTask::unregisterAll()
+{
+  // Libérer tous les csPARGS avant de vider les vecteurs
+  size_t nFuncs = BLOCK_ARGS.size();
+  for(size_t f = 0; f < nFuncs; f++)
+  {
+    size_t nBlocks = BLOCK_ARGS[f].size();
+    for(size_t i = 0; i < nBlocks; i++)
+    {
+      BLOCK_ARGS[f][i].clear();
+    }
+  }
+
+  BLOCK_FUNC.clear();
+  BLOCK_ARGS.clear();
+  THREAD_NAME.clear();
+  THREAD_GLOBAL_SIZE.clear();
 }
 
 void CSPARALLEL_API csParallelTask::execute(int id)
