@@ -9,7 +9,7 @@ The csParallelTask library is a powerful and flexible parallelization solution f
 - 🧩 **Simplified Parallelization**: Easily transform sequential operations into parallel processes without directly managing thread complexities.
 - 🔄 **Automatic Adaptation**: Dynamically adjusts to the number of available cores on the machine for optimal resource utilization.
 - 📦 **Flexible Argument Management**: Advanced mechanisms for passing and sharing data between worker threads.
-- ⏱️ **Integrated Performance Measurements**: Precise timing tools (`csPERF_CHECKER`) to evaluate performance gains.
+- ⏱️ **Integrated Performance Measurements**: Precise timing tools (`CSPERF_CHECKER`) to evaluate performance gains.
 - 🎮 **Execution Control**: Options for synchronous or asynchronous (background) executions.
 - 🔓 **Task Lifecycle**: Register tasks with `registerFunction*`, unregister with `unregisterFunction` or `unregisterAll`.
 
@@ -26,10 +26,10 @@ The csParallelTask library is a powerful and flexible parallelization solution f
 
 ## Core Components
 
-### csPARGS
+### CSPARGS
 Manages arguments and boundaries for parallel work blocks, providing a clean interface for thread communication. Use `clear()` to free resources before discarding.
 
-### csPERF_CHECKER
+### CSPERF_CHECKER
 Offers precise timing capabilities (nanoseconds to hours) to measure and optimize parallel execution performance.
 
 ### csParallelTask Namespace
@@ -64,7 +64,7 @@ csParallelTask::unregisterFunction(taskId);
 
 ```cpp
 // Measure execution time
-csPERF_CHECKER perf(CSTIME_UNIT_MICROSECOND);
+CSPERF_CHECKER perf(CSTIME_UNIT_MICROSECOND);
 perf.start();
 csParallelTask::execute("processData");
 perf.stop();
@@ -141,23 +141,25 @@ ninja
 
 ```
 csParallelTask/
-├── include/                 # Public headers
+├── include/                    # Public headers
 │   ├── csParallel.h
 │   ├── csPargs.h
 │   └── csPerfChecker.h
-├── src/                     # Source files
+├── src/                        # Source files
 │   ├── csParallel.cpp
 │   ├── csPargs.cpp
 │   ├── csPerfChecker.cpp
-│   └── main.cpp             # Benchmark program
-├── scripts/
-│   └── plot_benchmark.py    # Benchmark visualization
+│   └── main.cpp                # Benchmark & usage examples
+├── scripts/                    # Helper scripts
+│   ├── build.cmd               # Configure & build (Windows)
+│   ├── compile_execute_main.cmd# Build & run benchmark executable
+│   └── plot_benchmark.py       # Benchmark visualization
 ├── docs/
 │   └── csParallelTask_API.md   # API reference
-├── build.cmd                # Quick build (Windows)
-├── .gitignore
+├── others/                     # Extra sample codes (e.g. matrix multiply)
+|── libs/                       # Generated library for quick use
 ├── README.md
-└── LICENSE
+└── LICENSE.txt
 ```
 
 ## 📜 License

@@ -2,15 +2,15 @@
 
 #if defined _WIN32 || defined __CYGWIN__
   #ifdef BUILDING_CSPARALLEL_DLL
-    #define CSPARALLEL_API __declspec(dllexport)
+    #define CS_PARALLEL_TASK_API __declspec(dllexport)
   #else
-    #define CSPARALLEL_API __declspec(dllimport)
+    #define CS_PARALLEL_TASK_API __declspec(dllimport)
   #endif
 #else
   #ifdef BUILDING_CSPARALLEL_DLL
-    #define CSPARALLEL_API __attribute__ ((visibility ("default")))
+    #define CS_PARALLEL_TASK_API __attribute__ ((visibility ("default")))
   #else
-    #define CSPARALLEL_API
+    #define CS_PARALLEL_TASK_API
   #endif
 #endif
 
@@ -27,7 +27,7 @@
 #define CSTIME_UNIT_MICROSECOND     4
 #define CSTIME_UNIT_NANOSECOND      5
 
-class CSPARALLEL_API csPERF_CHECKER
+class CS_PARALLEL_TASK_API CSPERF_CHECKER
 {
   private:
   std::chrono::time_point<std::chrono::high_resolution_clock>
@@ -38,31 +38,31 @@ class CSPARALLEL_API csPERF_CHECKER
 
   public:
 /**
- * @brief TODO: Constructor.
- * @param unit TODO: Time unit.
+ * @brief Constructs a performance checker.
+ * @param unit Time unit used for measurements (see CSTIME_UNIT_* constants).
  */
-  csPERF_CHECKER(int unit = CSTIME_UNIT_MICROSECOND);
+  CSPERF_CHECKER(int unit = CSTIME_UNIT_MICROSECOND);
 /**
- * @brief TODO: Sets up the time unit.
- * @param unit TODO: Time unit.
+ * @brief Sets the time unit used for reporting.
+ * @param unit Time unit (see CSTIME_UNIT_* constants).
  */
   void setTimeUnit(int unit);
 /**
- * @brief TODO: Starts measuring execution time.
+ * @brief Starts measuring execution time.
  */
   void start();
 /**
- * @brief TODO: Stop measuring execution time.
+ * @brief Stops measuring execution time and records the elapsed time.
  */
   void stop();
 /**
- * @brief TODO: Print the execution time for a code block
- * @param title TODO: Output Title.
+ * @brief Prints the execution time for a code block.
+ * @param title Text prefix printed before the measured time.
  */
   void printReport(const char* title);
 /**
- * @brief TODO: Returns execution time for a code block.
- * @return size_t TODO: Execution time.
+ * @brief Returns the last measured execution time.
+ * @return Execution time in the configured time unit.
  */
   size_t getEllapsedTime();
 };

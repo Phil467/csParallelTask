@@ -10,10 +10,10 @@ It preserves original descriptions and parameter details but presents them in a 
 - [csParallel.h](#csparallelh)
   - [Templates & Utilities](#templates--utilities)
   - [Functions](#functions)
-- [csPARGS.h](#cspargsh)
-  - [Class `csPARGS` — Methods & Operators](#class-cspargs---methods--operators)
+- [CSPARGS.h](#cspargsh)
+  - [Class `CSPARGS` — Methods & Operators](#class-cspargs---methods--operators)
 - [csPerfChecker.h](#csperfcheckerh)
-  - [Class `csPERF_CHECKER` — Methods](#class-csperf_checker---methods)
+  - [Class `CSPERF_CHECKER` — Methods](#class-csperf_checker---methods)
 - [Examples](#examples)
 
 ---
@@ -50,31 +50,31 @@ Termination overload for the variadic `registerArgs` template (no-op).
 
 ### Functions
 
-#### `void setArgs(size_t idf, BUFFER_SHAPE shape, csPARGS funcArgs)`
+#### `void setArgs(size_t idf, BUFFER_SHAPE shape, CSPARGS funcArgs)`
 ```cpp
-void setArgs(size_t idf, BUFFER_SHAPE shape, csPARGS funcArgs);
+void setArgs(size_t idf, BUFFER_SHAPE shape, CSPARGS funcArgs);
 ```
 **Description**  
-Sets up arguments of each work block for the function indexed by `idf`.
+Configures the arguments for each buffer block of the function identified by `idf`.
 
 **Parameters**
 - **idf** — Index of the function.  
 - **shape** — Table containing the bounds of each created block.  
-- **funcArgs** — Object of `csPARGS` class containing arguments of the function.
+- **funcArgs** — Object of `CSPARGS` class containing arguments of the function.
 
 ---
 
-#### `void setArgsRegular(size_t idf, size_t workSize, csPARGS funcArgs)`
+#### `void setArgsRegular(size_t idf, size_t workSize, CSPARGS funcArgs)`
 ```cpp
-void setArgsRegular(size_t idf, size_t workSize, csPARGS funcArgs);
+void setArgsRegular(size_t idf, size_t workSize, CSPARGS funcArgs);
 ```
 **Description**  
-Sets up arguments of each regular (same size) work block for the function indexed by `idf`.
+Configures the arguments of each regular (same size) buffer block for the function identified by `idf`.
 
 **Parameters**
 - **idf** — Index of the function.  
 - **workSize** — The size of the work, used to build regular blocks.  
-- **funcArgs** — Object of `csPARGS` class containing arguments of the function.
+- **funcArgs** — Object of `CSPARGS` class containing arguments of the function.
 
 ---
 
@@ -83,7 +83,7 @@ Sets up arguments of each regular (same size) work block for the function indexe
 void setBufferShape(size_t idf, BUFFER_SHAPE shape);
 ```
 **Description**  
-Reshape the work by assigning a new buffer shape.
+Reshapes the buffer partitioning by assigning a new shape.
 
 **Parameters**
 - **idf** — Index of the function.  
@@ -96,7 +96,7 @@ Reshape the work by assigning a new buffer shape.
 void setBufferShapeRegular(size_t idf, size_t workSize);
 ```
 **Description**  
-Reshape the work with regular (same size) blocks following the new `workSize` parameter.
+Reshapes the buffer using regular (same size) blocks following the new `workSize` parameter.
 
 **Parameters**
 - **idf** — Index of the function.  
@@ -109,7 +109,7 @@ Reshape the work with regular (same size) blocks following the new `workSize` pa
 void setDelay(size_t idf, size_t delay);
 ```
 **Description**  
-Sets up time delay (in nanoseconds) for loops to make safe execution.
+Sets a time delay (in nanoseconds) inside loops to improve safe execution.
 
 **Parameters**
 - **idf** — Index of the function.  
@@ -122,7 +122,7 @@ Sets up time delay (in nanoseconds) for loops to make safe execution.
 void setDelay(size_t idf, vector<size_t> delayList);
 ```
 **Description**  
-Sets up time delay per-thread using a list of delay values.
+Sets a per-thread time delay (in nanoseconds) using a list of delay values.
 
 **Parameters**
 - **idf** — Index of the function.  
@@ -161,48 +161,48 @@ Defines whether each thread will be executed normally or in background.
 BUFFER_SHAPE makeRegularBufferShape(size_t workSize, size_t& nBlocks);
 ```
 **Description**  
-Make `nBlocks` threads of same size that work each on a part of the work. `nBlocks` is adjusted to CPU physical units if necessary.
+Creates `nBlocks` buffer blocks of equal size; each block is processed by one thread. `nBlocks` is adjusted to CPU hardware threads if necessary.
 
 **Parameters**
-- **workSize** — The size of the work.  
-- **nBlocks** — Number of work blocks (may be modified).
+- **workSize** — Total buffer size.  
+- **nBlocks** — Number of buffer blocks (may be modified).
 
 **Returns**  
 Table containing all the created blocks (buffer shape).
 
 ---
 
-#### `size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char* fName, void(*blockFunc)(csPARGS), csPARGS funcArgs)`
+#### `size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char* fName, void(*blockFunc)(CSPARGS), CSPARGS funcArgs)`
 ```cpp
-size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char* fName, void(*blockFunc)(csPARGS), csPARGS funcArgs);
+size_t registerFunction(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char* fName, void(*blockFunc)(CSPARGS), CSPARGS funcArgs);
 ```
 **Description**  
-Register a new function.
+Registers a new function to be executed in parallel.
 
 **Parameters**
-- **nBlocks** — Number of work blocks, each corresponding to one thread.  
-- **workSize** — Buffer size.  
-- **shape** — Table containing the bounds of each block to be created.  
+- **nBlocks** — Number of buffer blocks, each corresponding to one thread.  
+- **workSize** — Total buffer size.  
+- **shape** — Array containing the bounds of each block to be created.  
 - **fName** — Name of the function to register.  
 - **blockFunc** — Pointer to the function to register.  
-- **funcArgs** — `csPARGS` object containing arguments of the function.
+- **funcArgs** — `CSPARGS` object containing arguments of the function.
 
 **Returns**  
 Index of the registered function.
 
 ---
 
-#### `size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*blockFunc)(csPARGS), size_t nbArgs,...)`
+#### `size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*blockFunc)(CSPARGS), size_t nbArgs,...)`
 ```cpp
-size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*blockFunc)(csPARGS), size_t nbArgs,...);
+size_t registerFunctionEx(size_t nBlocks, size_t workSize, BUFFER_SHAPE shape, char*fName, void(*blockFunc)(CSPARGS), size_t nbArgs,...);
 ```
 **Description**  
-Extended registration allowing to specify directly pointers to each argument (variadic) instead of a `csPARGS` object.
+Extended registration allowing direct argument pointers (variadic) instead of a `CSPARGS` object.
 
 **Parameters**
-- **nBlocks** — Number of work blocks.  
-- **workSize** — Buffer size.  
-- **shape** — Table containing the bounds of each block.  
+- **nBlocks** — Number of buffer blocks.  
+- **workSize** — Total buffer size.  
+- **shape** — Array containing the bounds of each block.  
 - **fName** — Name of the function to register.  
 - **blockFunc** — Pointer to the function to register.  
 - **nbArgs** — Number of variadic arguments followed by their pointers.
@@ -212,16 +212,16 @@ Index of the registered function.
 
 ---
 
-#### `size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*blockFunc)(csPARGS), size_t nbArgs,...)`
+#### `size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*blockFunc)(CSPARGS), size_t nbArgs,...)`
 ```cpp
-size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*blockFunc)(csPARGS), size_t nbArgs,...);
+size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*blockFunc)(CSPARGS), size_t nbArgs,...);
 ```
 **Description**  
-Extended registration for regular blocks (work divided evenly), allowing variadic argument pointers.
+Extended registration for regular buffer blocks (work divided evenly), allowing variadic argument pointers.
 
 **Parameters**
-- **nBlocks** — Number of work blocks.  
-- **workSize** — The size of the work used to build regular blocks.  
+- **nBlocks** — Number of buffer blocks.  
+- **workSize** — Total buffer size used to build regular blocks.  
 - **fName** — Name of the function to register.  
 - **blockFunc** — Pointer to the function.  
 - **nbArgs** — Number of arguments followed by their pointers.
@@ -233,10 +233,10 @@ Index of the registered function.
 
 #### `template<typename... _Args> size_t registerFunctionRegularEx(...)` (variadic convenience overload)
 ```cpp
-template<typename... _Args> size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*Function)(csPARGS), void*arg, _Args... args);
+template<typename... _Args> size_t registerFunctionRegularEx(size_t nBlocks, size_t workSize, char*fName, void(*Function)(CSPARGS), void*arg, _Args... args);
 ```
 **Description**  
-Template helper that builds the `Args` array from variadic pointers, constructs a regular buffer shape, creates a `csPARGS` and calls `registerFunction` internally.
+Template helper that builds the `Args` array from variadic pointers, constructs a regular buffer shape, creates a `CSPARGS` and calls `registerFunction` internally.
 
 **Parameters**
 - **nBlocks** — Number of work blocks.  
@@ -255,7 +255,7 @@ Index of the registered function.
 void unregisterFunction(size_t idf);
 ```
 **Description**  
-Unregisters the function indexed by `idf` and removes its arguments. Calls `clear()` on all associated `csPARGS` to avoid memory leaks.
+Unregisters the function indexed by `idf` and removes its arguments. Calls `clear()` on all associated `CSPARGS` to avoid memory leaks.
 
 **Parameters**
 - **idf** — Index of the function to unregister.
@@ -271,9 +271,9 @@ Unregisters all registered functions and clears their arguments.
 
 ---
 
-#### `size_t getRightThreadNumber(size_t nThread)`
+#### `size_t getSafeThreadNumber(size_t nThread)`
 ```cpp
-size_t getRightThreadNumber(size_t nThread);
+size_t getSafeThreadNumber(size_t nThread);
 ```
 **Description**  
 Returns `min(nThread, getMaxThreadNumber())`.
@@ -298,24 +298,24 @@ Number of physical CPU units.
 
 ---
 
-#### `vector<csPARGS> getArgs(size_t idf)`
+#### `vector<CSPARGS> getArgs(size_t idf)`
 ```cpp
-vector<csPARGS> getArgs(size_t idf);
+vector<CSPARGS> getArgs(size_t idf);
 ```
 **Description**  
-Returns a table that contains the `csPARGS` arguments objects of all blocks for a function.
+Returns a table that contains the `CSPARGS` arguments objects of all blocks for a function.
 
 **Parameters**
 - **idf** — Index of the function.
 
 **Returns**  
-Vector of `csPARGS` objects, one per block.
+Vector of `CSPARGS` objects, one per block.
 
 ---
 
-#### `csPARGS getArgs(size_t idf, size_t ida)`
+#### `CSPARGS getArgs(size_t idf, size_t ida)`
 ```cpp
-csPARGS getArgs(size_t idf, size_t ida);
+CSPARGS getArgs(size_t idf, size_t ida);
 ```
 **Description**  
 Returns the arguments object of the `ida` block for the `idf` function.
@@ -325,7 +325,7 @@ Returns the arguments object of the `ida` block for the `idf` function.
 - **ida** — Index of the block.
 
 **Returns**  
-`csPARGS` for the specified block.
+`CSPARGS` for the specified block.
 
 ---
 
@@ -344,9 +344,9 @@ Index of the specified function.
 
 ---
 
-#### `size_t getId(void(*f)(csPARGS))`
+#### `size_t getId(void(*f)(CSPARGS))`
 ```cpp
-size_t getId(void(*f)(csPARGS));
+size_t getId(void(*f)(CSPARGS));
 ```
 **Description**  
 Returns the index of the function identified by its function pointer.
@@ -364,7 +364,7 @@ Index of the specified function.
 size_t getWorkSize(int idf);
 ```
 **Description**  
-Returns the global work size for the function indexed by `idf`.
+Returns the global buffer size for the function indexed by `idf`.
 
 **Parameters**
 - **idf** — Index of the function.
@@ -440,9 +440,9 @@ Computes every block in parallel for the function specified by name.
 
 ---
 
-#### `void execute(void(*f)(csPARGS))`
+#### `void execute(void(*f)(CSPARGS))`
 ```cpp
-void execute(void(*f)(csPARGS));
+void execute(void(*f)(CSPARGS));
 ```
 **Description**  
 Computes every block in parallel for the function specified by pointer `f`.
@@ -466,18 +466,18 @@ Executes a provided vector of `std::thread` objects (utility overload).
 
 ---
 
-## csPARGS.h
+## CSPARGS.h
 
-**Class:** `csPARGS` — Manages arguments and block metadata passed to parallelized functions.
+**Class:** `CSPARGS` — Manages arguments and block metadata passed to parallelized functions.
 
 ### Constructors & utility
 
-#### `csPARGS(size_t nArgs=0)`
+#### `CSPARGS(size_t nArgs=0)`
 ```cpp
-csPARGS(size_t nArgs=0);
+CSPARGS(size_t nArgs=0);
 ```
 **Description**  
-Constructs a `csPARGS` object with optional initial number of arguments.
+Constructs a `CSPARGS` object with optional initial number of arguments.
 
 ---
 
@@ -520,9 +520,9 @@ Sets up the number of arguments.
 
 ---
 
-#### `void setBounds(csPARGS::BOUNDS bounds)`
+#### `void setBounds(CSPARGS::BOUNDS bounds)`
 ```cpp
-void setBounds(csPARGS::BOUNDS bounds);
+void setBounds(CSPARGS::BOUNDS bounds);
 ```
 **Description**  
 Sets the work block bounds.
@@ -633,12 +633,12 @@ Number of blocks.
 
 ---
 
-#### `csPARGS::BOUNDS getBounds()`
+#### `CSPARGS::BOUNDS getBounds()`
 ```cpp
-csPARGS::BOUNDS getBounds();
+CSPARGS::BOUNDS getBounds();
 ```
 **Description**  
-Returns the work block bounds for this `csPARGS` instance.
+Returns the work block bounds for this `CSPARGS` instance.
 
 **Returns**  
 `BOUNDS` structure with `first` and `last`.
@@ -698,16 +698,16 @@ Work size value.
 
 ---
 
-#### `void makeArgs(...)` and `void makeArgs2(void** args, size_t nbArgs)`
+#### `void regArgs(...)` and `void regArgs2(void** args, size_t nbArgs)`
 ```cpp
-void makeArgs(...);
-void makeArgs2(void** args, size_t nbArgs);
-template<size_t _nbArgs> void makeArgs2(void* args[_nbArgs]);
+void regArgs(...);
+void regArgs2(void** args, size_t nbArgs);
+template<size_t _nbArgs> void regArgs2(void* args[_nbArgs]);
 ```
 **Description**  
 Initialize the internal argument array from variadic arguments or from a provided array of void pointers.
 
-**Parameters for makeArgs2(void** args, size_t nbArgs)**
+**Parameters for regArgs2(void** args, size_t nbArgs)**
 - **args** — Table of void pointers to argument addresses.  
 - **nbArgs** — Number of arguments.
 
@@ -727,19 +727,19 @@ Activates an internal mutex for safe coordination when accessing shared resource
 void clear();
 ```
 **Description**  
-Releases internal resources of the `csPARGS` object.
+Releases internal resources of the `CSPARGS` object.
 
 ---
 
 #### Conversion & operator overloads
 ```cpp
-operator csPARGS::BOUNDS();
+operator CSPARGS::BOUNDS();
 operator size_t();
 void* operator[](size_t i);
 void operator=(csVOID_ARG va);
 ```
 **Description**  
-- `operator csPARGS::BOUNDS()` — returns bounds.  
+- `operator CSPARGS::BOUNDS()` — returns bounds.  
 - `operator size_t()` — returns the block index.  
 - `operator[]` — returns argument pointer at index.  
 - `operator=` — assign a `csVOID_ARG` to set argument.
@@ -757,7 +757,7 @@ Defines whether the thread will be executed normally or in background. Can be `C
 
 ## csPerfChecker.h
 
-**Class:** `csPERF_CHECKER` — Simple timing utility for measuring code execution.
+**Class:** `CSPERF_CHECKER` — Simple timing utility for measuring code execution.
 
 ### Constants
 ```cpp
@@ -771,9 +771,9 @@ Defines whether the thread will be executed normally or in background. Can be `C
 
 ### Methods
 
-#### `csPERF_CHECKER(int unit = CSTIME_UNIT_MICROSECOND)`
+#### `CSPERF_CHECKER(int unit = CSTIME_UNIT_MICROSECOND)`
 ```cpp
-csPERF_MEASUREMENT(int unit = CSTIME_UNIT_MICROSECOND);
+CSPERF_CHECKER(int unit = CSTIME_UNIT_MICROSECOND);
 ```
 **Description**  
 Constructor. Optionally sets the time unit for measurements.
@@ -841,7 +841,7 @@ Elapsed time in the configured unit.
 
 ### Example 1 — Parallel computation with `csParallelTask`
 ```cpp
-void compute(csPARGS args) {
+void compute(CSPARGS args) {
     auto b = args.getBounds();
     double* data = args.getArgPtr<double>(0);
     for(size_t i = b.first; i < b.last; ++i)
@@ -860,18 +860,18 @@ int main() {
 }
 ```
 
-### Example 2 — Using `csPARGS` to handle thread-specific data
+### Example 2 — Using `CSPARGS` to handle thread-specific data
 ```cpp
-csPARGS args(3);
+CSPARGS args(3);
 int x = 1, y = 2, z = 3;
-args.makeArgs2((void*[]){&x, &y, &z});
+args.regArgs2((void*[]){&x, &y, &z});
 args.setBounds({0, 100});
 args.setDelay(1000);
 ```
 
 ### Example 3 — Measuring performance
 ```cpp
-csPERF_CHECKER perf(CSTIME_UNIT_MICROSECOND);
+CSPERF_CHECKER perf(CSTIME_UNIT_MICROSECOND);
 perf.start();
 // Code block to measure
 perf.stop();

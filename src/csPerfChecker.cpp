@@ -1,21 +1,21 @@
 #include "csPerfChecker.h"
 
-csPERF_CHECKER::csPERF_CHECKER(int _unit)
+CSPERF_CHECKER::CSPERF_CHECKER(int _unit)
 {
     setTimeUnit(_unit);
 }
 
-void csPERF_CHECKER::setTimeUnit(int _unit)
+void CSPERF_CHECKER::setTimeUnit(int _unit)
 {
     unit = _unit;
 }
 
-void csPERF_CHECKER::start()
+void CSPERF_CHECKER::start()
 {
    strt = std::chrono::high_resolution_clock::now();
 }
 
-void csPERF_CHECKER::stop()
+void CSPERF_CHECKER::stop()
 {
   stp = std::chrono::high_resolution_clock::now();
   // Calculer la dur�e en microsecondes (ou autre unit�)
@@ -55,13 +55,13 @@ void csPERF_CHECKER::stop()
 
 }
 
-void csPERF_CHECKER::printReport(const char* title)
+void CSPERF_CHECKER::printReport(const char* title)
 {
   std::cout<< title;
   std::cout << "Execution time : " << ellapsed << unitName << " \n";
 }
 
-size_t csPERF_CHECKER::getEllapsedTime()
+size_t CSPERF_CHECKER::getEllapsedTime()
 {
   return ellapsed;
 }

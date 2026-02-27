@@ -22,7 +22,7 @@ const int    UNIT = CSTIME_UNIT_MICROSECOND;
 
 // ---- Kernels paralleles ----
 
-static void kernel_sum(csPARGS args) {
+static void kernel_sum(CSPARGS args) {
     double* data = args.getArgPtr<double>(0);
     double* global_sum = args.getArgPtr<double>(1);
     auto b = args.getBounds();
@@ -34,7 +34,7 @@ static void kernel_sum(csPARGS args) {
     *global_sum += sum;
 }
 
-static void kernel_scale(csPARGS args) {
+static void kernel_scale(CSPARGS args) {
     double* data = args.getArgPtr<double>(0);
     double* factor = args.getArgPtr<double>(1);
     auto b = args.getBounds();
@@ -44,7 +44,7 @@ static void kernel_scale(csPARGS args) {
     for (size_t i = first; i < last; i++) data[i] *= f;
 }
 
-static void kernel_min(csPARGS args) {
+static void kernel_min(CSPARGS args) {
     double* data = args.getArgPtr<double>(0);
     double* global_min = args.getArgPtr<double>(1);
     auto b = args.getBounds();
@@ -57,7 +57,7 @@ static void kernel_min(csPARGS args) {
     if (m < *global_min) *global_min = m;
 }
 
-static void kernel_max(csPARGS args) {
+static void kernel_max(CSPARGS args) {
     double* data = args.getArgPtr<double>(0);
     double* global_max = args.getArgPtr<double>(1);
     auto b = args.getBounds();
@@ -70,7 +70,7 @@ static void kernel_max(csPARGS args) {
     if (m > *global_max) *global_max = m;
 }
 
-static void kernel_dot(csPARGS args) {
+static void kernel_dot(CSPARGS args) {
     double* a = args.getArgPtr<double>(0);
     double* b = args.getArgPtr<double>(1);
     double* global_dot = args.getArgPtr<double>(2);
@@ -83,7 +83,7 @@ static void kernel_dot(csPARGS args) {
     *global_dot += sum;
 }
 
-static void kernel_fill(csPARGS args) {
+static void kernel_fill(CSPARGS args) {
     double* data = args.getArgPtr<double>(0);
     double* value = args.getArgPtr<double>(1);
     auto b = args.getBounds();
@@ -93,7 +93,7 @@ static void kernel_fill(csPARGS args) {
     for (size_t i = first; i < last; i++) data[i] = v;
 }
 
-static void kernel_sqsum(csPARGS args) {
+static void kernel_sqsum(CSPARGS args) {
     double* data = args.getArgPtr<double>(0);
     double* global_sum = args.getArgPtr<double>(1);
     auto b = args.getBounds();
@@ -105,7 +105,7 @@ static void kernel_sqsum(csPARGS args) {
     *global_sum += sum;
 }
 
-static void kernel_axpy(csPARGS args) {
+static void kernel_axpy(CSPARGS args) {
     double* x = args.getArgPtr<double>(0);
     double* y = args.getArgPtr<double>(1);
     double* alpha = args.getArgPtr<double>(2);
@@ -114,6 +114,54 @@ static void kernel_axpy(csPARGS args) {
     size_t last  = b.last;
     double a = *alpha;
     for (size_t i = first; i < last; i++) y[i] = a * x[i] + y[i];
+}
+
+static void kernel_sort_segment(CSPARGS args) {
+    double* data = args.getArgPtr<double>(0);
+    auto b = args.getBounds();
+    size_t first = b.first;
+    size_t last  = b.last;
+    size_t blockSize = last - first;
+    size_t id = args.getBlockId();
+    size_t N = args.getWorkSize();
+
+    //for (size_t k = 0; k < blockSize*2; k++)
+    {//std::sort(data + first, data + last);
+
+    for (size_t k = 0; k < blockSize; k++) 
+    {
+        for (size_t i = first + id+k, j=0; i < last+k; i++, j++) {
+            size_t next = last + j + id+k;
+            if (next >= N) 
+            {
+                next -= N;
+                if (data[i] < data[next]) {
+                    double tmp = data[i];
+                    data[i] = data[next];
+                    data[next] = tmp;
+                }
+            }
+            else 
+            {
+                if (data[i] > data[next]) {
+                    double tmp = data[i];
+                    data[i] = data[next];
+                    data[next] = tmp;
+                }
+            }
+        }
+
+        /*for (size_t i = first+1; i < last; i++)
+        {
+            if (data[i] < data[i-1]) {
+                double tmp = data[i];
+                data[i] = data[i-1];
+                data[i-1] = tmp;
+            }
+        }*/
+    }
+    }
+
 }
 
 // ---- Versions sequentielles ----
@@ -180,8 +228,8 @@ int main() {
         data2[i] = 1.0 / (1 + i % 100);
     }
 
-    csPERF_CHECKER perf(UNIT);
-    size_t nThreads = getRightThreadNumber(getMaxThreadNumber());
+    CSPERF_CHECKER perf(UNIT);
+    size_t nThreads = getSafeThreadNumber(getMaxThreadNumber());
 
     // -------------------------------------------------------------------------
     print_section("1. Somme des elements");
@@ -382,6 +430,54 @@ int main() {
 
     cout << "  axpy - y[0] (seq) = " << y_axpy[0] << "  (par) = " << y_axpy2[0] << "\n";
     print_perf("Temps seq", t_axpy_seq, "Temps par", t_axpy_par);
+
+    // -------------------------------------------------------------------------
+    N = 16;
+    print_section("11. Tri (chaque thread trie son segment)");
+    vector<double> data_sort_seq(N);
+    vector<double> data_sort_par(N);
+    {
+        std::mt19937 rng(N);
+        std::uniform_real_distribution<double> dist(1, N);
+        for (size_t i = 0; i < N; i++) {
+            double v = dist(rng);
+            data_sort_seq[i] = data_sort_par[i] = v;
+        }
+    }
+
+    perf.start();
+    std::sort(data_sort_seq.begin(), data_sort_seq.end());
+    perf.stop();
+    size_t t_sort_seq = perf.getEllapsedTime();
+
+    size_t id_sort = registerFunctionRegularEx(nThreads, N, (char*)"sort_segment", kernel_sort_segment,
+        data_sort_par.data());
+    perf.start();
+    execute(id_sort);
+    perf.stop();
+    size_t t_sort_par = perf.getEllapsedTime();
+    unregisterFunction(id_sort);
+
+    cout << "  Seq: tri global. Par: tri par segments (chaque bloc trie en place).\n";
+    cout << "  Apres tri seq - premiers: " << data_sort_seq[0] << " " << data_sort_seq[1] << "  derniers: " << data_sort_seq[N-2] << " " << data_sort_seq[N-1] << "\n";
+    cout << "  Apres tri par - premiers: " << data_sort_par[0] << " " << data_sort_par[1] << "  derniers: " << data_sort_seq[N-2] << " " << data_sort_seq[N-1] << "\n";
+    print_perf("Temps seq", t_sort_seq, "Temps par", t_sort_par);
+
+    for (size_t i = 0; i < N; i++) {
+        if(data_sort_seq[i] != data_sort_par[i]) {
+            cout << "  Erreur: data_sort_seq[" << i << "] = " << data_sort_seq[i] << " != data_sort_par[" << i << "] = " << data_sort_par[i] << "\n";
+            break;
+        }
+    }
+
+    for (size_t i = 0; i < N; i++) {
+        cout << data_sort_par[i] << " ";
+    }
+    cout << endl;
+    for (size_t i = 0; i < N; i++) {
+        cout << data_sort_seq[i] << " ";
+    }
+    cout << endl;
 
     // Nettoyage final
     unregisterAll();

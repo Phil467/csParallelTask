@@ -58,7 +58,7 @@ void multiplyMatricesSequential(const Matrix& A, const Matrix& B, Matrix& C)
 
 // Parallel processing function (used by each thread)
 // This function processes one or more rows of the resulting matrix
-void multiplyMatricesParallel(csPARGS args)
+void multiplyMatricesParallel(CSPARGS args)
 {
     // Retrieve arguments
     Matrix* A = args.getArgPtr<Matrix>(0);
@@ -116,14 +116,14 @@ int main()
     );
 
     // Measure time for parallel multiplication
-    csPERF_MEASUREMENT parTime(CSTIME_UNIT_MILLISECOND);
+    CSPERF_CHECKER parTime(CSTIME_UNIT_MILLISECOND);
     parTime.start();
     csParallelTask::execute(funcId);
     parTime.stop();
     parTime.printReport("Parallel Matrix Multiplication");
 
     // Measure time for sequential multiplication
-    csPERF_CHECKER seqTime(CSTIME_UNIT_MILLISECOND);
+    CSPERF_CHECKER seqTime(CSTIME_UNIT_MILLISECOND);
     seqTime.start();
     multiplyMatricesSequential(A, B, C_seq);
     seqTime.stop();
